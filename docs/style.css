@@ -509,6 +509,8 @@ p { margin: 0; }
 .hero--doc .hero__note a { font-weight: 700; }
 /* Hero aligné sur les sections de texte (.prose), centrées sur 860 px. */
 .hero--narrow .container { max-width: 860px; }
+/* Le lien « Nous suivre » reste aligné sur la barre, pas sur la colonne de texte. */
+.hero--narrow .hero__follow { max-width: 1160px; }
 .hero--doc code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 14px;
@@ -716,7 +718,7 @@ a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
   .step h3 { font-size: 19px; }
   .step__visual { padding: 20px 12px; }
   .ready { flex-direction: column; align-items: flex-start; padding: 22px; }
-  .hero--doc { padding: 48px 0 60px; }
+  .hero--doc { padding: 56px 0 60px; }
   .doc-table th, .doc-table td { padding: 12px 14px; font-size: 15px; }
   .callout { padding: 20px; }
   .formula { padding: 18px; font-size: 14px; }
