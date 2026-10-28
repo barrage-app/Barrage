@@ -37,15 +37,19 @@
         <span class="brand__logo" aria-hidden="true"></span>
         <span class="brand__name">Barrage</span>
       </a>
-      <nav class="nav__links" aria-label="Navigation principale">
+      <nav class="nav__links" id="nav-links" aria-label="Navigation principale">
         <a href="#fonctionnement">Fonctionnement</a>
         <a href="#installation">Installation</a>
         <a href="#open-source">Open source</a>
         <a href="algorithme.html">L'algo de X</a>
+        <a href="agir.html">Agir</a>
         <a href="https://github.com/barrage-app/Barrage" target="_blank" rel="noopener">GitHub</a>
         <a class="btn btn--outline btn--sm nav__share" href="https://x.com/intent/post?text=Barrage%20bloque%20automatiquement%20les%20comptes%20d%27une%20liste%20collaborative.%20Extension%20gratuite%20et%20open%20source%20pour%20Chrome%2C%20Brave%20et%20Edge.&amp;url=https%3A%2F%2Fbarrage-app.github.io%2FBarrage%2F" target="_blank" rel="noopener" aria-label="Partager Barrage sur X"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.77L17.75 3Zm-1.08 16.18h1.7L7.4 4.73H5.58l11.09 14.45Z" fill="currentColor"/></svg><span class="nav__label">Partager</span></a>
         <a class="btn btn--yellow btn--sm" href="#installation">Installer</a>
       </nav>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Ouvrir le menu">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </header>
 
@@ -301,6 +305,10 @@
             Ce qui fait baisser un post sur X
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
+          <a class="link-row link-row--outline" href="agir.html">
+            Agir sur X : le guide pratique
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
           <a class="link-row link-row--outline" href="https://github.com/barrage-app/Barrage/issues/new" target="_blank" rel="noopener">
             Signaler un problème
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v6.5M12 16.5v.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -328,5 +336,6 @@
     </div>
   </footer>
 
+  <script src="nav.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agir sur X : faire reculer les uns, faire avancer les autres</title>
+  <meta name="description" content="Ce qu'il faut faire, et ne surtout pas faire, pour réduire la visibilité des comptes adverses et augmenter celle de vos idées sur X, d'après le code de l'algorithme.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="canonical" href="https://barrage-app.github.io/Barrage/agir.html">
+
+  <!-- Partage : X lit les balises twitter:* (il ne reprend pas toujours og:*), les autres réseaux og:* -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Barrage">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:url" content="https://barrage-app.github.io/Barrage/agir.html">
+  <meta property="og:title" content="Agir sur X : le guide pratique">
+  <meta property="og:description" content="Ne jamais répondre aux comptes adverses, citer plutôt que liker, se suivre entre soi : ce que dit vraiment l'algorithme de X.">
+  <meta property="og:image" content="https://barrage-app.github.io/Barrage/assets/og-agir.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agir sur X : le guide pratique, d'après le code de l'algorithme.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Agir sur X : le guide pratique">
+  <meta name="twitter:description" content="Ne jamais répondre aux comptes adverses, citer plutôt que liker, se suivre entre soi : ce que dit vraiment l'algorithme de X.">
+  <meta name="twitter:image" content="https://barrage-app.github.io/Barrage/assets/og-agir.png">
+  <meta name="twitter:image:alt" content="Agir sur X : le guide pratique, d'après le code de l'algorithme.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="index.html" aria-label="Barrage, accueil">
+        <span class="brand__logo" aria-hidden="true"></span>
+        <span class="brand__name">Barrage</span>
+      </a>
+      <nav class="nav__links" id="nav-links" aria-label="Navigation principale">
+        <a href="#reduire">Contrer leurs comptes</a>
+        <a href="#augmenter">Porter vos idées</a>
+        <a href="#eviter">Pièges à éviter</a>
+        <a href="algorithme.html">L'algo de X</a>
+        <a class="btn btn--outline btn--sm nav__share" href="https://x.com/intent/post?text=Faire%20reculer%20des%20id%C3%A9es%20r%C3%A9trogrades%2C%20faire%20avancer%20celles%20que%20vous%20d%C3%A9fendez%20%3A%20voici%20ce%20qui%20marche%20vraiment%2C%20d%27apr%C3%A8s%20le%20code%20de%20l%27algorithme%20de%20X%20%21%20%F0%9F%91%87&amp;url=https%3A%2F%2Fbarrage-app.github.io%2FBarrage%2Fagir.html" target="_blank" rel="noopener" aria-label="Partager ce guide sur X"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.77L17.75 3Zm-1.08 16.18h1.7L7.4 4.73H5.58l11.09 14.45Z" fill="currentColor"/></svg><span class="nav__label">Partager</span></a>
+        <a class="btn btn--yellow btn--sm" href="index.html#installation">Installer</a>
+      </nav>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Ouvrir le menu">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- Intro -->
+    <section class="hero hero--doc hero--narrow">
+      <div class="container">
+        <p class="tag">Guide pratique · d'après le code de l'algorithme de X</p>
+        <h1>Agir sur X.</h1>
+        <p class="hero__lead">Faire reculer les comptes qui propagent des idées rétrogrades, faire avancer les idées que vous défendez : voici ce qui marche vraiment, et ce qui se retourne contre vous. Une règle traverse tout : ce qui compte, c'est l'envie de réagir que donne un post, pas l'accumulation mécanique de clics.</p>
+        <p class="hero__note"><strong>D'où viennent ces conseils ?</strong> Ils résument <a href="algorithme.html">notre analyse détaillée du code de X</a>, faite par <strong>Claude Code</strong>, l'assistant de programmation d'Anthropic, et relue par plusieurs agents Claude indépendants. <strong>X n'a publié qu'une partie de son algorithme</strong> : quand un conseil repose sur une déduction, la page le dit.</p>
+      </div>
+    </section>
+
+    <!-- Réduire -->
+    <section class="section section--cream" id="reduire">
+      <div class="container prose">
+        <h2>Réduire la visibilité des comptes</h2>
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr><th scope="col">À faire</th><th scope="col">Pourquoi</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Ne jamais leur répondre, ne pas les citer, ne pas les retweeter, même pour critiquer</th><td>Une réponse ou une citation a un poids de 5, contre 0,66 pour un like. Rien dans le code de classement ne distingue l'accord du désaccord : une réponse critique les fait monter.</td></tr>
+              <tr><th scope="row">Cliquer sur « pas intéressé »</th><td>Un signal volontaire et clair, pris en compte dans le score, et dans le second tri de la page quand il est activé.</td></tr>
+              <tr><th scope="row">Masquer ou bloquer</th><td>Le compte disparaît de votre fil, et votre geste apprend au modèle que les gens comme vous n'aiment pas ce contenu. Les blocages reçus sont aussi donnés à Grok quand il note les réponses du compte.</td></tr>
+              <tr><th scope="row">Signaler seulement les vraies infractions</th><td>C'est le signal qui pèse le plus sur la réputation d'un compte. Certains classifieurs qui peuvent suspendre un compte semblent, d'après leur nom, s'appuyer sur les signalements. Une partie des calculs ne retient que les signalements jugés légitimes.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-line">Rappel : ces gestes réduisent surtout la portée d'un compte <strong>chez les gens qui vous ressemblent</strong>, via les recommandations. Son propre public est à peine touché. Le détail et les liens vers le code sont dans <a href="algorithme.html#signaux">l'analyse complète</a>.</p>
+      </div>
+    </section>
+
+    <!-- Augmenter -->
+    <section class="section" id="augmenter">
+      <div class="container prose">
+        <h2>Augmenter la visibilité de vos idées</h2>
+        <p><strong>Comment lire ce tableau ?</strong> Chaque fois que quelqu'un ouvre son fil, X essaie de deviner comment cette personne va réagir à chaque post. Va-t-elle le partager ? Y répondre ? Le liker ? Plus un post a de chances de provoquer chez elle les réactions du haut du tableau, plus il est placé haut dans son fil.</p>
+        <p>Exemple : si X pense que Julie a de bonnes chances de partager votre post par lien, ce post monte beaucoup dans le fil de Julie. Si X pense qu'elle va seulement le liker, il monte peu. Ce qui compte, ce n'est donc pas de cliquer beaucoup vous-même, c'est l'<strong>envie de réagir</strong> que votre post donne à ceux qui le voient.</p>
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr><th scope="col">Réaction</th><th scope="col">Nom dans le code</th><th scope="col">Poids</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">« Copier le lien » dans le menu de partage (pour le coller ailleurs : WhatsApp, Telegram…)</th><td><code>ShareViaCopyLinkWeight</code></td><td class="num">20</td></tr>
+              <tr><th scope="row">Réponse</th><td><code>ReplyWeight</code></td><td class="num">5</td></tr>
+              <tr><th scope="row">… bonus si le lecteur et l'auteur se suivent mutuellement, sur un post original</th><td><code>BidirectionalFollowReplyWeightBoost</code></td><td class="num">+15</td></tr>
+              <tr><th scope="row">Citation</th><td><code>QuoteWeight</code></td><td class="num">5</td></tr>
+              <tr><th scope="row">Partage en message privé</th><td><code>ShareViaDmWeight</code></td><td class="num">5</td></tr>
+              <tr><th scope="row">Abonnement à l'auteur</th><td><code>FollowAuthorWeight</code></td><td class="num">4</td></tr>
+              <tr><th scope="row">Partage</th><td><code>ShareWeight</code></td><td class="num">2</td></tr>
+              <tr><th scope="row">Retweet</th><td><code>RetweetWeight</code></td><td class="num">1</td></tr>
+              <tr><th scope="row">Like</th><td><code>FavoriteWeight</code></td><td class="num">0,66</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-line">Source : <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/params/param.rs#L396-L480" target="_blank" rel="noopener">home-mixer/params/param.rs</a>. Le bonus mutuel ne s'applique qu'aux posts originaux, ni réponses ni reposts (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/xai-value-model/inputs.rs#L20-L22" target="_blank" rel="noopener">inputs.rs</a>). Le temps passé à lire compte aussi, en continu. vm-ranker, qui classe en temps normal, a les mêmes valeurs sauf le like (0,5). Ce sont des valeurs par défaut, que X peut changer, et un poids ne se lit pas comme un nombre de likes.</p>
+
+        <h3>Ce qu'on peut en déduire</h3>
+        <ol class="facts">
+          <li>
+            <h3>Publier des posts originaux</h3>
+            <p>Des posts qui donnent envie de répondre, de citer et de partager : questions, informations, vidéos. Ce sont les réactions qui pèsent le plus.</p>
+          </li>
+          <li>
+            <h3>Se suivre mutuellement</h3>
+            <p>Entre personnes qui partagent les mêmes idées : X donne un bonus aux posts originaux d'un compte quand il les classe pour ses abonnés mutuels.</p>
+          </li>
+          <li>
+            <h3>Citer plutôt que retweeter</h3>
+            <p>Une citation crée un nouveau post à vous, qui contient le post d'origine. Contrairement à un retweet, elle peut recevoir le bonus mutuel de +15 chez les gens avec qui vous vous suivez : le code n'exclut du bonus que les réponses et les retweets (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/scorers/value_model.rs#L67" target="_blank" rel="noopener">value_model.rs</a>).</p>
+            <p><strong>Attention : une citation sans texte est comptée comme un simple retweet.</strong> Si vous cliquez sur « Citer » sans rien écrire, X publie un repost, sans bonus. Pour que la citation compte, il faut écrire un commentaire.</p>
+          </li>
+          <li>
+            <h3>Retweeter plutôt que liker</h3>
+            <p>Un retweet fait apparaître le post chez vos propres abonnés ; un like ne le diffuse pas, il sert surtout à dire au modèle ce qui vous plaît. Pour faire circuler un post, le like seul ne suffit pas.</p>
+          </li>
+          <li>
+            <h3>Réagir vraiment</h3>
+            <p>Répondre, partager, prendre le temps de lire : ça apprend au modèle que les gens comme vous aiment ce contenu, ce qui l'aide à le leur montrer.</p>
+          </li>
+        </ol>
+        <p class="src-line">Une limite : le code publié ne montre pas si le nombre total de réactions d'un post l'aide à remonter chez <em>tout le monde</em>. Il montre seulement que chaque lecteur se voit montrer ce à quoi il est susceptible de réagir.</p>
+      </div>
+    </section>
+
+    <!-- À éviter -->
+    <section class="section section--cream" id="eviter">
+      <div class="container prose">
+        <h2>Ce qu'il ne faut surtout pas faire</h2>
+        <p>Le service anti-abus de X a des étiquettes dédiées au spam et aux campagnes. La plupart font coller <code>SpamHighRecall</code> sur le post, ce qui le retire des recommandations. Certaines mènent à la suspension du compte (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/abuse-enforcement-service/service-lib/rules/enforcement_post.yaml#L39-L62" target="_blank" rel="noopener">enforcement_post.yaml</a>, <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/abuse-enforcement-service/service-lib/rules/enforcement_user.yaml#L36-L45" target="_blank" rel="noopener">enforcement_user.yaml</a>). Ce qui déclenche ces étiquettes n'est pas publié : les conseils ci-dessous se déduisent de leur nom.</p>
+        <div class="callout callout--warn">
+          <ul>
+            <li><strong>Campagnes</strong> (<code>anchor_campaign</code>) : ne pas poster tous le même texte au même moment.</li>
+            <li><strong>Réponses en rafale</strong> (<code>fast_reply_spam</code>) : ne pas inonder les réponses d'un post.</li>
+            <li><strong>Réponses copiées-collées</strong> : Grok reçoit l'information « Reply Was Pasted » quand il note une réponse (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/core/lm/thread.py#L62-L63" target="_blank" rel="noopener">thread.py</a>). Chacun écrit avec ses propres mots.</li>
+            <li><strong>Contenu généré par IA à la chaîne</strong> (<code>llm_slop</code>) : le post reçoit l'étiquette <code>RiskyHighVizReply</code>, le compte <code>SpamHighRecall</code>.</li>
+            <li><strong>Faux comptes, bots, signalements de masse infondés</strong> : le code suspend les comptes repérés comme bots de spam pour « manipulation de la plateforme ». Les signalements abusifs sont aussi interdits par les règles de X.</li>
+          </ul>
+        </div>
+
+        <div class="callout callout--yellow">
+          <h3>En une phrase</h3>
+          <p>Des posts originaux qui donnent envie de répondre et de partager, des gens qui se suivent entre eux et citent avec un commentaire plutôt que de retweeter ou liker, et un silence total face aux comptes adverses : « pas intéressé », masquer ou bloquer, et ne jamais interagir avec eux.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pour aller plus loin -->
+    <section class="section section--dark">
+      <div class="container oss">
+        <div class="oss__text">
+          <p class="tag tag--small">Pour aller plus loin</p>
+          <h2>Comprendre pourquoi.</h2>
+          <p>Chaque conseil de cette page vient de l'analyse du code de l'algorithme de X. Les explications détaillées, les limites et tous les liens vers le code sont dans la documentation complète.</p>
+        </div>
+        <div class="oss__links">
+          <a class="link-row link-row--yellow" href="algorithme.html">
+            Lire l'analyse complète
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--red" href="index.html#installation">
+            Installer Barrage
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--white" href="https://x.com/intent/post?text=Faire%20reculer%20des%20id%C3%A9es%20r%C3%A9trogrades%2C%20faire%20avancer%20celles%20que%20vous%20d%C3%A9fendez%20%3A%20voici%20ce%20qui%20marche%20vraiment%2C%20d%27apr%C3%A8s%20le%20code%20de%20l%27algorithme%20de%20X%20%21%20%F0%9F%91%87&amp;url=https%3A%2F%2Fbarrage-app.github.io%2FBarrage%2Fagir.html" target="_blank" rel="noopener">
+            Partager ce guide sur X
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.77L17.75 3Zm-1.08 16.18h1.7L7.4 4.73H5.58l11.09 14.45Z" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">
+        <span class="brand__logo brand__logo--white" aria-hidden="true"></span>
+        <strong>Barrage</strong>
+        <span>Projet indépendant, non affilié à X, Instagram ou TikTok.</span>
+      </p>
+      <p class="footer__links">
+        <a href="index.html">Retour à l'accueil</a>
+        <a href="https://github.com/barrage-app/Barrage" target="_blank" rel="noopener">Code source et liste sur GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="nav.js" defer></script>
+</body>
+</html>

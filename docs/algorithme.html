@@ -32,13 +32,17 @@
         <span class="brand__logo" aria-hidden="true"></span>
         <span class="brand__name">Barrage</span>
       </a>
-      <nav class="nav__links" aria-label="Navigation principale">
+      <nav class="nav__links" id="nav-links" aria-label="Navigation principale">
         <a href="#signaux">Les signaux</a>
         <a href="#reputation">Réputation</a>
         <a href="#campagnes">Campagnes</a>
+        <a href="agir.html">Agir</a>
         <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">Code de X</a>
         <a class="btn btn--yellow btn--sm" href="index.html#installation">Installer</a>
       </nav>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Ouvrir le menu">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </header>
 
@@ -343,8 +347,20 @@
       </div>
     </section>
 
+    <!-- Agir -->
+    <section class="section section--cream" id="agir">
+      <div class="container prose">
+        <h2>Et concrètement, que faire ?</h2>
+        <p>Toute cette analyse se résume en quelques règles pratiques : ne jamais répondre aux comptes adverses, cliquer sur « pas intéressé », citer avec un commentaire plutôt que retweeter, retweeter plutôt que liker, se suivre entre soi… et ce qu'il ne faut surtout pas faire pour ne pas être pris pour du spam.</p>
+        <div class="callout callout--yellow">
+          <h3>Le guide pratique</h3>
+          <p>Retrouvez toutes ces règles, expliquées et sourcées, sur une page dédiée : <a href="agir.html"><strong>Agir sur X</strong></a>.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- Limites -->
-    <section class="section section--cream" id="limites">
+    <section class="section" id="limites">
       <div class="container prose">
         <h2>Ce qu'on ne sait pas</h2>
         <ul>
@@ -402,5 +418,6 @@
     </div>
   </footer>
 
+  <script src="nav.js" defer></script>
 </body>
 </html>
