@@ -462,6 +462,7 @@ p { margin: 0; }
 .link-row--yellow { background: var(--yellow); color: var(--ink); }
 .link-row--red { background: var(--red); color: var(--white); }
 .link-row--outline { border-color: var(--white); color: var(--white); }
+.link-row--white { background: var(--white); color: var(--ink); }
 
 /* ---------- Footer ---------- */
 
@@ -510,6 +511,16 @@ a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
   .mock--menu { justify-content: center; }
   .mock--menu .menu { width: 100%; border-left: 0; box-shadow: none; }
   .submenu { display: none; }
+  .nav__links { gap: 12px; }
+  .nav__share { padding: 8px 10px; }
+  .nav__label { display: none; }
+}
+
+@media (max-width: 360px) {
+  .brand__name { font-size: 20px; }
+  .nav__links { gap: 8px; }
+  .container { padding: 0 16px; }
+  .nav .btn--sm { padding: 8px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
