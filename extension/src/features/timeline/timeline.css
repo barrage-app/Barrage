@@ -1,0 +1,4 @@
+/* Contenu d'un compte de la liste, masqué dès son apparition dans le fil. */
+[data-barrage-hidden] {
+  display: none !important;
+}

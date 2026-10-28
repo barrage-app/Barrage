@@ -1,0 +1,50 @@
+<p class="hint panel-hint">
+  L'interrupteur <strong>Blocage automatique</strong> est actif par défaut. Désactivez-le pour que Barrage
+  ignore un compte, et le débloque s'il l'avait bloqué.
+</p>
+<aside class="tip">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <p>
+    <strong>Astuce</strong> : pour mettre à jour les comptes que vous avez déjà bloqués,
+    <a href="https://x.com/settings/blocked/all" target="_blank" rel="noopener">cliquez sur ce lien</a>
+    et faites défiler tous vos comptes bloqués jusqu'en bas. La liste se met à jour au fur et à mesure,
+    sans recharger cette page : Barrage lit seulement la page de X, sans rien lui envoyer.
+  </p>
+</aside>
+
+<div class="alert" data-part="alert" role="alert" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5.5M12 16.5v.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+  <div class="alert-body">
+    <strong data-part="title"></strong>
+    <span data-part="message"></span>
+  </div>
+  <a href="https://x.com/home" target="_blank" rel="noopener">Ouvrir x.com</a>
+</div>
+
+<div class="progress" data-part="progress">
+  <div class="progress-head">
+    <span class="progress-count" data-part="blocked"></span>
+    <span class="progress-total" data-part="total"></span>
+  </div>
+  <div class="progress-bar" data-part="bar" role="img"></div>
+</div>
+
+<input type="search" class="search" data-part="search" spellcheck="false" autocomplete="off"
+  placeholder="Rechercher un compte…">
+
+<div class="chips" data-part="chips" role="group" aria-label="Filtrer par état"></div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="toggle-cell">Blocage automatique</th>
+        <th>Compte</th>
+        <th>État</th>
+        <th class="action"><span class="sr-only">Action</span></th>
+      </tr>
+    </thead>
+    <tbody data-part="rows"></tbody>
+  </table>
+  <p class="no-match" data-part="no-match" hidden></p>
+</div>

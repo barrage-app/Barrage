@@ -1,0 +1,8 @@
+/* Pied de la page d'options : demande de retrait de la liste, lien vers le dépôt. */
+.page-footer {
+  display: flex; flex-wrap: wrap; gap: 8px 24px;
+  margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.page-footer a { color: var(--text-muted); }
+.page-footer a:hover { color: var(--text); }

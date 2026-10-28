@@ -1,0 +1,19 @@
+{
+  "name": "barrage",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Extension Chrome : blocage automatique des comptes d'une liste collaborative et open source",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "icons": "node scripts/make-icons.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.2.8",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,16 @@
+/* Onglets des réseaux, sur le modèle de ceux de X : texte gras, barre sous l'onglet actif. */
+/* Cinq réseaux ou plus : les onglets passent à la ligne plutôt que de déborder. */
+.tabs { display: flex; flex-wrap: wrap; gap: 0 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.tab {
+  display: flex; align-items: center; gap: 7px; padding: 12px 10px; margin-bottom: -1px;
+  background: transparent; color: var(--text-muted); border-radius: 0; border-bottom: 3px solid transparent;
+  font-size: 15px; font-weight: 700;
+}
+.tab:hover:not(:disabled) { background: var(--surface); }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--blue); }
+.tab:focus-visible { outline-offset: -2px; }
+.tab svg { width: 20px; height: 20px; flex: none; }
+.tab-count {
+  font-size: 13px; font-weight: 700; padding: 1px 9px; border-radius: 9999px;
+  background: var(--line); color: var(--text-muted);
+}

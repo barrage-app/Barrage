@@ -1,0 +1,70 @@
+/* Composants génériques de la page d'options. */
+
+button {
+  padding: 9px 20px; border: 0; border-radius: 9999px;
+  background: var(--blue); color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--blue-hover); }
+button:disabled { opacity: .5; cursor: default; }
+
+/* Boutons d'action d'une ligne : « Bloquer » en vert, « Débloquer » en rouge. */
+button.block, button.unblock { padding: 6px 18px; font-size: 15px; line-height: 22px; }
+button.block { background: var(--green); }
+button.block:hover:not(:disabled) { background: var(--green-hover); }
+button.unblock { background: var(--red); }
+button.unblock:hover:not(:disabled) { background: var(--red-hover); }
+
+/* Interrupteur : une case à cocher habillée, accessible au clavier telle quelle. */
+input.switch {
+  appearance: none; position: relative; display: block; flex: none; margin: 0; cursor: pointer;
+  width: 46px; height: 26px; border-radius: 9999px; background: var(--grey);
+  transition: background .15s;
+}
+input.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); transition: transform .15s;
+}
+input.switch:checked { background: var(--blue); }
+input.switch:checked::after { transform: translateX(20px); }
+@media (prefers-reduced-motion: reduce) { input.switch, input.switch::after { transition: none; } }
+
+/* Pastille d'état. */
+.tag {
+  display: inline-block; padding: 2px 10px; border-radius: 9999px;
+  font-size: 14px; font-weight: 700; line-height: 20px;
+}
+.tag.blocked { background: var(--green-soft); color: var(--green-text); }
+.tag.visible { background: var(--amber-soft); color: var(--amber-text); }
+
+/* Puce de filtre, avec pastille de couleur et compteur. */
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px;
+  border: 1px solid var(--border); background: transparent; color: var(--text);
+  font-size: 15px; font-weight: 700;
+}
+.chip:hover:not(:disabled) { background: var(--surface); }
+.chip[aria-pressed="true"] { background: var(--chip-active-bg); border-color: var(--chip-active-bg); color: var(--chip-active-text); }
+.chip .count { font-weight: 600; opacity: .8; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grey); flex: none; }
+/* Couleur de chaque catégorie d'état, partagée par les puces et la barre de progression. */
+.dot.blocked, .segment.blocked { background: var(--green); }
+.dot.visible, .segment.visible { background: var(--amber); }
+.dot.problem, .segment.problem { background: var(--red); }
+.segment.disabled { background: var(--grey); }
+
+/* Badge plein, par exemple « Bientôt disponible ». */
+.badge {
+  display: inline-block; margin-right: 6px; padding: 1px 9px; border-radius: 9999px;
+  background: var(--amber-soft); color: var(--amber-text); font-size: 13px; font-weight: 700;
+}
+
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+.search {
+  width: 100%; box-sizing: border-box; margin: 0; padding: 12px 16px 12px 44px; font: inherit;
+  border: 1px solid var(--border); border-radius: 9999px; color: var(--text);
+  background: transparent no-repeat 16px center / 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23808b95' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+}
+.search::placeholder { color: var(--text-muted); }
+.search:focus { outline: 2px solid var(--blue); outline-offset: -1px; border-color: transparent; }

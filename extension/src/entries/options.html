@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barrage</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <!-- Coquille seulement : chaque section est remplie par sa fonctionnalité,
+       voir src/entries/options.ts. -->
+  <header class="page-header">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="24" fill="var(--brand)"/>
+      <rect x="12" y="20.5" width="24" height="7" rx="2" fill="#fff"/>
+    </svg>
+    <div class="page-title">
+      <h1>Barrage</h1>
+      <p>Bloque automatiquement les comptes d'une liste collaborative et open source, depuis un onglet x.com connecté.</p>
+    </div>
+    <span id="connection"></span>
+  </header>
+  <main>
+    <section id="notifications"></section>
+    <section id="accounts"></section>
+  </main>
+  <footer class="page-footer">
+    <a href="mailto:barrage.app@protonmail.com?subject=Demande%20de%20retrait%20de%20la%20liste">Demander un retrait de la liste</a>
+    <a href="https://github.com/barrage-app/Barrage" target="_blank" rel="noopener">Code source et liste sur GitHub</a>
+  </footer>
+  <script src="options.js"></script>
+</body>
+</html>
