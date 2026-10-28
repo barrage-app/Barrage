@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ce qui fait baisser un post sur X : l'algorithme expliqué</title>
+  <meta name="description" content="Ignorer, pas intéressé, masquer, bloquer, signaler : ce que chaque geste change vraiment dans l'algorithme de X, expliqué simplement à partir du code open source.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="canonical" href="https://barrage-app.github.io/Barrage/algorithme.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Barrage">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:url" content="https://barrage-app.github.io/Barrage/algorithme.html">
+  <meta property="og:title" content="Ce qui fait baisser un post sur X">
+  <meta property="og:description" content="Ignorer, pas intéressé, masquer, bloquer, signaler : ce que chaque geste change vraiment dans l'algorithme de X, preuves dans le code à l'appui.">
+  <meta property="og:image" content="https://barrage-app.github.io/Barrage/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ce qui fait baisser un post sur X">
+  <meta name="twitter:description" content="Ignorer, pas intéressé, masquer, bloquer, signaler : ce que chaque geste change vraiment dans l'algorithme de X, preuves dans le code à l'appui.">
+  <meta name="twitter:image" content="https://barrage-app.github.io/Barrage/assets/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="index.html" aria-label="Barrage, accueil">
+        <span class="brand__logo" aria-hidden="true"></span>
+        <span class="brand__name">Barrage</span>
+      </a>
+      <nav class="nav__links" aria-label="Navigation principale">
+        <a href="#signaux">Les signaux</a>
+        <a href="#reputation">Réputation</a>
+        <a href="#campagnes">Campagnes</a>
+        <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener">Code de X</a>
+        <a class="btn btn--yellow btn--sm" href="index.html#installation">Installer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- Intro -->
+    <section class="hero hero--doc">
+      <div class="container">
+        <p class="tag">Documentation · l'algorithme de X décortiqué</p>
+        <h1>Ce qui fait baisser un post sur X.</h1>
+        <p class="hero__lead">Ignorer un post, cliquer sur « pas intéressé », masquer, bloquer, signaler : on entend tout et son contraire sur ce qui marche. X a publié le code de son algorithme de recommandation, alors on l'a lu. Voici ce qu'il dit vraiment.</p>
+        <p class="hero__note"><strong>Qui a écrit cette page ?</strong> L'analyse a été faite par <strong>Claude Code</strong>, l'assistant de programmation d'Anthropic. Il a lu le code de X et rédigé cette documentation. Son analyse a ensuite été relue par plusieurs agents Claude indépendants, qui ont confronté chaque affirmation au code. <strong>X n'a publié qu'une partie de son algorithme</strong> : quand une conclusion dépend de ce qui manque, la page le signale.</p>
+        <p class="hero__note">Analyse du dépôt <a href="https://github.com/xai-org/x-algorithm/tree/5ed796374ea48ee26058aab66ab10c266bea2bef" target="_blank" rel="noopener">xai-org/x-algorithm</a>, version publiée le 28 octobre 2026 (commit <code>5ed7963</code>). Les liens pointent vers cette version précise.</p>
+      </div>
+    </section>
+
+    <!-- Résumé -->
+    <section class="section section--cream">
+      <div class="container">
+        <h2>L'essentiel en 30 secondes</h2>
+        <p class="section__lead">Si vous ne lisez qu'une chose, lisez ce tableau. Le reste de la page explique d'où viennent ces conclusions.</p>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th scope="col">Votre geste</th>
+                <th scope="col">Effet sur <em>votre</em> fil</th>
+                <th scope="col">Effet sur la portée du compte auprès des autres</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Ignorer (scroller sans s'arrêter)</th>
+                <td><span class="lvl lvl--1">Très faible</span></td>
+                <td>Aucun</td>
+              </tr>
+              <tr>
+                <th scope="row">« Pas intéressé »</th>
+                <td><span class="lvl lvl--3">Fort</span> le modèle vous montre moins ce <em>type</em> de post</td>
+                <td>Aucun</td>
+              </tr>
+              <tr>
+                <th scope="row">Masquer</th>
+                <td><span class="lvl lvl--4">Total</span> l'auteur disparaît de votre fil</td>
+                <td>Aucun direct</td>
+              </tr>
+              <tr>
+                <th scope="row">Bloquer</th>
+                <td><span class="lvl lvl--4">Total</span> l'auteur disparaît de votre fil</td>
+                <td>Faible et indirect (surtout via le tri des réponses)</td>
+              </tr>
+              <tr>
+                <th scope="row">Signaler</th>
+                <td><span class="lvl lvl--3">Fort</span></td>
+                <td>Le seul levier réel, mais encadré et en partie non publié</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout--yellow">
+          <h3>À retenir</h3>
+          <p>Presque tout ce que vous faites agit sur <strong>votre</strong> fil, et sur celui des gens qui vous ressemblent. Dans le code publié, ignorer, masquer ou bloquer un compte, même par milliers, ne réduit pas la diffusion de ses posts auprès de ses abonnés. X affirme dans un commentaire du code que le classement est pensé pour résister aux blocages et signalements de masse. La vraie exception, c'est la <strong>suspension</strong>, que peuvent déclencher des classifieurs anti-abus dont certains semblent s'appuyer sur les signalements.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comment X classe -->
+    <section class="section" id="principe">
+      <div class="container prose">
+        <h2>Comment X choisit ce que vous voyez</h2>
+
+        <p>Chaque fois que vous ouvrez l'onglet « Pour vous », X sélectionne un grand nombre de posts candidats, puis il doit les <strong>classer</strong>. Pour ça, un modèle d'intelligence artificielle (appelé <em>Phoenix</em>) essaie de <strong>deviner ce que vous allez faire</strong> avec chaque post :</p>
+        <ul>
+          <li>quelle est la probabilité que vous le likiez ?</li>
+          <li>que vous y répondiez ?</li>
+          <li>que vous cliquiez sur « pas intéressé » ?</li>
+          <li>que vous bloquiez son auteur ?</li>
+          <li>que vous le signaliez ?</li>
+        </ul>
+        <p>Chacune de ces probabilités est ensuite multipliée par un <strong>poids</strong> : positif pour les actions que X veut encourager, négatif pour celles qui montrent que le post vous déplaît. On additionne le tout et on obtient un score. Plus le score est haut, plus le post apparaît haut dans votre fil.</p>
+
+        <div class="formula" role="img" aria-label="Score égale la somme des probabilités multipliées par leur poids">
+          <span>score</span> = <span class="formula__pos">P(like) × poids like</span> + <span class="formula__pos">P(réponse) × poids réponse</span> + … + <span class="formula__neg">P(bloquer) × poids bloquer</span> + <span class="formula__neg">P(signaler) × poids signaler</span>
+        </div>
+
+        <p>Le calcul se trouve dans <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/xai-value-model/scoring.rs#L69-L140" target="_blank" rel="noopener">xai-value-model/scoring.rs</a>, fonction <code>compute_weighted_score</code>. Le score subit ensuite quelques ajustements, par exemple pour éviter de montrer trop de posts du même auteur.</p>
+
+        <div class="callout">
+          <h3>Le point que presque tout le monde rate</h3>
+          <p>Les poids ne multiplient <strong>pas</strong> le nombre de blocages ou de signalements qu'un post a reçus. Ils multiplient <strong>votre probabilité à vous</strong> de faire cette action, prédite à partir de votre comportement passé. X le précise noir sur blanc dans un commentaire du code : il est faux de dire qu'« un signalement annule 468 likes » (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/xai-value-model/scoring.rs#L28-L56" target="_blank" rel="noopener">scoring.rs, lignes 28 à 56</a>).</p>
+          <p>Conséquence directe : quand vous bloquez ou masquez quelqu'un, vous apprenez au modèle que <em>vous</em>, et les profils proches du vôtre, réagissez mal à ce genre de contenu. Vous ne retirez pas directement de points au post pour le reste du monde.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Les signaux -->
+    <section class="section section--cream" id="signaux">
+      <div class="container prose">
+        <h2>Les cinq signaux négatifs et leur poids</h2>
+        <p>Voici les poids négatifs par défaut, tels qu'ils sont écrits dans le code. Plus le nombre est grand (en valeur absolue), plus le signal pèse.</p>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th scope="col">Signal</th>
+                <th scope="col">Nom dans le code</th>
+                <th scope="col">Poids</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Signaler</th><td><code>ReportWeight</code></td><td class="num">−234</td></tr>
+              <tr><th scope="row">Masquer l'auteur</th><td><code>MuteAuthorWeight</code></td><td class="num">−58,8</td></tr>
+              <tr><th scope="row">« Pas intéressé »</th><td><code>NotInterestedWeight</code></td><td class="num">−52,3</td></tr>
+              <tr><th scope="row">Bloquer l'auteur</th><td><code>BlockAuthorWeight</code></td><td class="num">−31,2</td></tr>
+              <tr><th scope="row">Ignorer (ne pas s'arrêter)</th><td><code>NotDwelledWeight</code></td><td class="num">−0,02</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="src-line">Source : <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/params/param.rs#L490-L514" target="_blank" rel="noopener">home-mixer/params/param.rs, lignes 490 à 514</a>. En temps normal, c'est le service <em>vm-ranker</em> qui calcule le classement et renvoie le score. Les poids de home-mixer servent surtout en secours, si vm-ranker ne répond pas, et pour le second tri décrit plus bas (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/scorers/vm_ranker.rs#L84-L135" target="_blank" rel="noopener">home-mixer/scorers/vm_ranker.rs</a>). vm-ranker a les mêmes poids négatifs, sauf « pas intéressé », fixé à −47,52 (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/vm-ranker/params.rs#L108-L132" target="_blank" rel="noopener">vm-ranker/params.rs</a>). Les deux services déclarent leurs poids sous les mêmes noms de réglage (par exemple <code>rust_home_mixer_not_interested_weight</code>). Une valeur fixée par X en production s'applique donc sans doute aux deux, et les écarts entre valeurs par défaut disparaissent. Le code ne permet pas de le confirmer.</p>
+
+        <div class="callout">
+          <h3>Pourquoi un signalement pèse si lourd ?</h3>
+          <p>Ce n'est pas parce qu'il serait « 7 fois plus grave » qu'un blocage. C'est parce que c'est un geste <strong>extrêmement rare</strong>. D'après le commentaire du code, la probabilité de base d'un signalement est plus de 1000 fois plus faible que celle d'un like. Sans un poids énorme, une probabilité aussi minuscule n'aurait aucun effet sur le classement.</p>
+        </div>
+
+        <h3>Un deuxième tri où bloquer et masquer ne comptent pas</h3>
+        <p>Après ce premier score, X peut réordonner la page entière avec un second système (le <em>page decode rerank</em>). Ce système est <strong>désactivé par défaut</strong> dans le code (<code>EnablePageDecodeRerank = false</code>), mais X peut l'allumer pour une partie des utilisateurs. Pour calculer son score, il ne regarde que trois signaux négatifs : <strong>« pas intéressé »</strong>, <strong>signaler</strong> et <strong>ignorer</strong>, avec les mêmes poids que ci-dessus (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/scorers/page_decode_rerank_scorer.rs#L32-L48" target="_blank" rel="noopener">page_decode_rerank_scorer.rs</a>). Bloquer et masquer n'entrent pas dans ce score.</p>
+        <p>Ils comptent en revanche dans un mode d'<strong>apprentissage</strong> de ce système, lui aussi désactivé par défaut : un post qui a reçu un « pas intéressé », un signalement, un blocage, un masquage ou un « montrer moins » ne rapporte aucune récompense au modèle (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/phoenix/xrex/models/page_rl.py#L41-L48" target="_blank" rel="noopener">phoenix/xrex/models/page_rl.py</a>).</p>
+
+        <div class="callout callout--warn">
+          <h3>Les valeurs réelles peuvent être différentes</h3>
+          <p>Ce sont les valeurs <em>par défaut</em> écrites dans le code. X peut les modifier à tout moment en production, sans republier le code : ce sont des réglages à distance (des <em>feature switches</em>), qui peuvent même différer d'un groupe d'utilisateurs à l'autre pour des tests. vm-ranker prévoit aussi de faire varier légèrement les poids d'un utilisateur à l'autre (<code>WeightPerturbationSigma</code>, à 0 par défaut). Prenez ces chiffres comme des ordres de grandeur, pas comme les valeurs exactes utilisées aujourd'hui.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ignorer -->
+    <section class="section" id="ignorer">
+      <div class="container prose">
+        <h2>Ignorer : le signal le plus faible</h2>
+        <p>Une consigne circule souvent : « n'interagissez pas, ignorez leurs posts, l'algorithme comprendra que ce contenu n'intéresse personne ». C'est vrai sur le principe, mais l'effet est minuscule.</p>
+
+        <h3>Ce qui se passe quand vous ignorez un post</h3>
+        <p>Quand un post s'affiche à l'écran et que vous passez sans vous arrêter, l'application envoie un événement appelé <code>ClientTweetRecapNotDwelled</code> (« post affiché mais pas regardé »). Le modèle apprend à prédire cet événement, ce qui explique qu'il ait son propre poids (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/phoenix/xrex/data/recsys/constants.py#L74-L76" target="_blank" rel="noopener">constants.py, <code>IsRecapNotDwelled</code></a>). En principe, un post ignoré est aussi un exemple de « post qui ne vous a pas fait réagir », ce qui doit faire baisser doucement vos probabilités prédites de like ou de réponse sur ce genre de contenu.</p>
+
+        <h3>Pourquoi ça compte si peu</h3>
+        <p>Parce qu'ignorer est le comportement <strong>normal</strong>. Vous passez sans vous arrêter sur l'immense majorité des posts de votre fil. Un post ignoré peut vouloir dire « je n'aime pas », mais aussi « je l'ai déjà vu », « je scrollais vite », « je suis pressé ». C'est un signal très bruité, et X lui donne un poids minuscule : <strong>−0,02</strong>.</p>
+        <p>Attention à ne pas comparer les poids directement : ils multiplient des probabilités. Ignorer est très probable, cliquer sur « pas intéressé » est très rare, donc l'écart réel entre les deux est bien moindre que l'écart entre leurs poids. Mais « pas intéressé » est un geste volontaire au message clair, et c'est notre déduction qu'il pèse nettement plus qu'un post ignoré. À l'entraînement, X traite d'ailleurs un post ignoré comme un « négatif léger » (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/phoenix/xrex/models/recsys_two_tower_model.py#L2857-L2861" target="_blank" rel="noopener">recsys_two_tower_model.py</a>).</p>
+
+        <h3>Un post ignoré ne revient pas de toute façon</h3>
+        <p>Si votre crainte est de revoir le même post encore et encore : X retire déjà de votre fil les posts qu'il vous a montrés. C'est le rôle du filtre <code>PreviouslySeenPostsFilter</code>, appliqué avant le classement (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/filters/previously_seen_posts_filter.rs" target="_blank" rel="noopener">previously_seen_posts_filter.rs</a>). Ce qui revient, ce sont d'autres posts du même auteur ou sur le même sujet.</p>
+
+        <h3>« Pas intéressé » propose aussi d'agir sur l'auteur</h3>
+        <p>Le menu de retour d'un post propose plusieurs options, dont « Montrer moins de posts de @compte » et « Montrer moins de reposts de @compte ». Chaque retour est envoyé à X avec une durée de vie de <strong>30 jours</strong> (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/util/urt/feedback.rs#L12-L25" target="_blank" rel="noopener">home-mixer/util/urt/feedback.rs</a>). Ce « montrer moins » fait partie des retours négatifs que le modèle Phoenix apprend à prédire, au même titre que « pas intéressé », le signalement, le masquage et le blocage (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/phoenix/xrex/data/recsys/constants.py#L561-L567" target="_blank" rel="noopener">constants.py</a>). En revanche, l'effet direct pendant 30 jours sur les posts de cet auteur est géré par un service <strong>qui n'est pas publié</strong>.</p>
+
+        <div class="callout callout--yellow">
+          <h3>En pratique</h3>
+          <p>Si un type de contenu vous déplaît, <strong>« pas intéressé »</strong> est bien plus efficace que l'ignorer. C'est aussi le seul signal négatif volontaire, avec le signalement, que le second tri de la page prend en compte quand il est activé.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Masquer bloquer -->
+    <section class="section section--cream" id="masquer-bloquer">
+      <div class="container prose">
+        <h2>Masquer et bloquer : effacer un auteur de votre fil</h2>
+        <p>Au-delà des poids, masquer et bloquer ont un effet beaucoup plus radical : un <strong>filtre</strong>. Avant même le classement, le filtre <code>AuthorSocialgraphFilter</code> retire tous les posts des comptes que vous avez bloqués ou masqués. Pour les comptes <strong>bloqués</strong>, il retire aussi les reposts et les citations de leurs posts faits par d'autres. Il retire enfin les posts des comptes qui <em>vous</em> ont bloqué (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/filters/author_socialgraph_filter.rs#L10-L53" target="_blank" rel="noopener">home-mixer/filters/author_socialgraph_filter.rs</a>).</p>
+        <p>Pour <strong>votre</strong> fil, masquer et bloquer reviennent donc au même : l'auteur disparaît, ses posts à venir aussi. Ce n'est pas une baisse de score, c'est une suppression pure et simple.</p>
+
+        <div class="cmp">
+          <article class="card">
+            <h3>Masquer</h3>
+            <p>L'auteur disparaît de votre fil. D'après le fonctionnement de l'application (ce n'est pas dans le code), il n'est pas prévenu et peut toujours voir vos posts. Votre masquage sert aussi à entraîner le modèle commun (<code>IsMuteAuthor</code>). Aucun calcul de réputation publié ne l'utilise.</p>
+          </article>
+          <article class="card">
+            <h3>Bloquer</h3>
+            <p>L'auteur disparaît de votre fil, et vous du sien. Votre blocage sert aussi à entraîner le modèle commun (<code>IsBlockAuthor</code>), et il est compté dans un ratio de réputation (voir la section suivante) qu'aucun modèle publié n'utilise.</p>
+          </article>
+        </div>
+
+        <div class="callout">
+          <h3>« Bloquer va à l'encontre de la stratégie » : faux</h3>
+          <p>On lit parfois qu'il ne faut pas bloquer parce que l'algorithme comprendrait juste que vous n'avez pas vu le contenu. Il y a une part de vrai : une fois le compte bloqué, vous ne voyez plus ses posts, donc vous ne pouvez plus les ignorer. Mais le blocage est un retour négatif explicite : il apprend au modèle, sans ambiguïté, que ce contenu vous déplaît, là où un post ignoré n'est qu'un « négatif léger ». Et comme on le verra, les blocages reçus par un compte sont l'une des informations données au classifieur qui note ses réponses.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Réputation -->
+    <section class="section" id="reputation">
+      <div class="container prose">
+        <h2>Au-delà de votre fil : la réputation d'un compte</h2>
+        <p>Tout ce qui précède concerne <em>votre</em> fil. Mais X calcule aussi des <strong>scores de réputation par compte</strong>, enregistrés sous forme d'instantanés quotidiens, et des règles automatiques collent des <strong>étiquettes</strong> aux comptes suspects. C'est là que vos gestes peuvent toucher un compte auprès des autres. Comme on va le voir, l'effet est plus limité qu'on le croit.</p>
+
+        <h3>Le ratio « blocages par like »</h3>
+        <p>Un programme appelé <em>Agatha</em> calcule pour chaque compte le ratio <code>BlocksPerFav</code> : combien de gens l'ont bloqué, comparé au nombre de gens qui l'ont liké (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/rate_based_labels/RateBasedLabels.scala#L29-L117" target="_blank" rel="noopener">agatha/…/RateBasedLabels.scala</a>). Le calcul est plus subtil qu'il n'y paraît :</p>
+        <ul>
+          <li><strong>On compte des personnes, pas des clics.</strong> Un fan qui like 50 posts du compte compte pour une seule personne. Quelqu'un qui bloque le compte compte pour un blocage.</li>
+          <li><strong>Seuls les likes de « l'extérieur » comptent.</strong> Les likes des gens qui suivent le compte, ou qu'il suit, sont exclus (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/favs/Favs.scala#L15-L19" target="_blank" rel="noopener">Favs.scala</a>). L'idée est de mesurer comment réagissent les inconnus, pas la communauté du compte.</li>
+          <li><strong>Sur les 30 derniers jours</strong> pour les blocages, les likes et les signalements de spam. Seuls les signalements passés par l'outil <code>AbuseTriageTool</code> sont comptés sur 180 jours.</li>
+          <li><strong>Chaque personne est plafonnée à 100 cibles.</strong> Si vous bloquez 10 000 comptes, seuls 100 d'entre eux, tirés au hasard, comptent dans le calcul (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/LabelUtil.scala#L12-L23" target="_blank" rel="noopener">LabelUtil.scala, <code>maxTakePerSourceID = 100</code></a>). Les outils de blocage de masse pèsent donc très peu, Barrage compris.</li>
+          <li><strong>Le score est « lissé ».</strong> Pour un compte qui a peu d'interactions, le résultat reste proche du ratio moyen du réseau, pour éviter qu'une poignée de blocages suffise à le condamner.</li>
+        </ul>
+
+        <div class="formula" role="img" aria-label="Score égale B plus 0,1, divisé par B plus F plus 0,1 divisé par le ratio moyen du réseau">
+          <span>score</span> = <span class="formula__neg">(B + 0,1)</span> ÷ <span>(B + F + 0,1 ÷ ratio moyen du réseau)</span>
+        </div>
+        <p class="src-line"><strong>B</strong> = nombre de personnes qui ont bloqué le compte, <strong>F</strong> = nombre de personnes extérieures qui l'ont liké. Le ratio moyen du réseau est calculé sur tous les comptes, chacun y pesant au plus 1000 interactions (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/LabelUtil.scala#L25-L44" target="_blank" rel="noopener">LabelUtil.scala</a>). Plus F est grand, plus il faut de blocages pour faire bouger le score.</p>
+
+        <p>Le code définit aussi une variante, <code>MentionFilteredBlocksPerFav</code>, et une fonction qui compte les gens ayant <strong>bloqué ou masqué</strong> un compte après avoir été mentionnés par lui (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/rate_based_labels/RateBasedLabels.scala#L208-L227" target="_blank" rel="noopener">RateBasedLabels.scala, <code>blocksMatch</code></a>). C'est la seule trace du masquage dans ces calculs. Mais le calcul de cette variante n'est pas dans le code publié, et aucun modèle publié ne l'utilise.</p>
+
+        <h3>La surprise : ce ratio n'est pas utilisé</h3>
+        <p>En suivant le code jusqu'au bout, on découvre que <code>BlocksPerFav</code> est bien calculé, mais qu'<strong>aucun modèle du code publié ne s'en sert</strong> :</p>
+        <ul>
+          <li>le modèle « à ratios » est entraîné uniquement sur les signalements par like et les signalements de spam par like (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/RateBasedBuildJob.scala#L25-L29" target="_blank" rel="noopener">RateBasedBuildJob.scala</a>) ;</li>
+          <li>le score de réputation <em>Blink</em> utilise ces mêmes signalements, plus les suspensions pour spam et le contenu adulte (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/blink/BlinkScoreJobTemplate.scala#L279-L285" target="_blank" rel="noopener">BlinkScoreJobTemplate.scala</a>) ;</li>
+          <li>le graphe des blocages n'est même pas chargé par le programme qui prépare les données d'Agatha (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/data/ActiveUserFeaturesJob.scala#L21-L31" target="_blank" rel="noopener">ActiveUserFeaturesJob.scala</a>). Le seul endroit où Blink le mentionne sert à l'<strong>exclure</strong> pour prédire les signalements (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/blink/BlinkScoreJobTemplate.scala#L287-L297" target="_blank" rel="noopener">BlinkScoreJobTemplate.scala, lignes 287 à 297</a>).</li>
+        </ul>
+        <p>Autrement dit, dans la partie publiée d'Agatha, ce sont surtout <strong>les signalements</strong> et les suspensions pour spam qui construisent la mauvaise réputation d'un compte, pas le ratio de blocages.</p>
+        <p class="src-line">Deux nuances. D'abord, Agatha charge des « tattles », des signalements internes à X, et il en existe un type <code>TattleType.Block</code>. Il est exclu d'un des graphes (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/data/loaders/NonLegitTattlesNoBlocksGraphDataLoader.scala#L27" target="_blank" rel="noopener">NonLegitTattlesNoBlocksGraphDataLoader.scala</a>) mais pas des tattles légitimes, qui servent notamment à prédire le score de suspension pour spam. Or c'est ce score qui déclenche les étiquettes Agatha décrites plus bas. Le dépôt ne dit pas ce que recouvre exactement ce type. Ensuite, que Blink prenne la peine d'exclure le graphe des blocages laisse penser qu'il existe côté production, même s'il n'est pas chargé dans le code publié.</p>
+
+        <h3>Ce qui arrive à un compte mal noté</h3>
+        <p>Les scores d'Agatha sont lus par <em>botmaker</em>, un moteur de règles automatiques anti-spam. Quand un score dépasse un seuil, une règle colle une <strong>étiquette</strong> au compte ou à ses posts. Le système de visibilité lit ensuite ces étiquettes et applique ses propres règles (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/author_rules.rs#L204-L275" target="_blank" rel="noopener">author_rules.rs</a>), chacune dans des contextes précis (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/levels.rs#L38-L89" target="_blank" rel="noopener">levels.rs</a>, <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/safety_level.rs#L147-L157" target="_blank" rel="noopener">safety_level.rs</a>) :</p>
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr><th scope="col">Étiquette</th><th scope="col">D'où elle vient</th><th scope="col">Où elle agit</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row"><code>AgathaSpamTopUser</code><br>(sur le compte)</th><td>Règle botmaker : score de suspension pour spam &gt; 0,99, ou signalements de spam par like &gt; 0,999. Pendant 7 jours. Comptes très influents et comptes certifiés gris exemptés (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/botmaker-rules/scarecrow/bot/ProductionAgatha__FilterOutOrganicNotifications.bot" target="_blank" rel="noopener">règle 21278</a>)</td><td><strong>Notifications d'abonnement uniquement</strong> (« vous suit », « a accepté votre demande »), pour les gens qui ne suivent pas le compte</td></tr>
+              <tr><th scope="row"><code>AGATHA_SPAM</code><br>(sur chaque post)</th><td>Règle botmaker : signalements de spam par like &gt; 0,9975, ou suspension pour spam &gt; 0,98. Pendant 7 jours. Mêmes exemptions (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/botmaker-rules/scarecrow/bot/AgathaSpamProduction__ApplySearchTopTweetLabel.bot" target="_blank" rel="noopener">règle 20998</a>)</td><td><strong>Non publié.</strong> Le nom de la règle évoque les meilleurs résultats de la recherche</td></tr>
+              <tr><th scope="row"><code>BlinkWorst</code><br>(sur le compte)</th><td>Non publié</td><td><strong>Notifications d'abonnement uniquement</strong>, pour les non-abonnés qui ont le filtre de qualité (apparemment actif par défaut), sauf s'ils sont eux-mêmes mal notés par Blink</td></tr>
+              <tr><th scope="row"><code>SpamHighRecall</code><br>(compte ou post)</th><td>Service anti-abus (classifieurs de spam, de bots, de contenu généré par IA) et règles botmaker (liens malveillants)</td><td>Posts retirés des <strong>recommandations</strong> (fil « Pour vous » hors abonnements, vidéo immersive) et notifications d'abonnement coupées, souvent pendant 7 ou 30 jours. Les abonnés du compte continuent de voir ses posts</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Autrement dit, dans le code publié, les étiquettes tirées des ratios de signalements (Agatha, Blink) <strong>ne retirent pas les posts du fil</strong>. Elles coupent les notifications d'abonnement et, peut-être, pénalisent dans la recherche. <code>SpamHighRecall</code> fait partie des étiquettes qui retirent un compte des recommandations, avec d'autres : contenu adulte, compte piraté, usurpation d'identité, contenu abusif… (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/levels.rs#L142-L213" target="_blank" rel="noopener">levels.rs, recommandations</a>).</p>
+
+        <h3>Là où les blocages comptent : le tri des réponses</h3>
+        <p>X utilise son IA Grok pour noter les <strong>réponses</strong> et repérer le spam. Parmi les informations fournies à Grok sur l'auteur de la réponse figure le nombre de <strong>blocages « légitimes » qu'il a reçus dans les dernières 24 heures</strong> (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/core/lm/thread.py#L58-L61" target="_blank" rel="noopener">grox/core/lm/thread.py</a>, activé dans <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/flows/reply_spam/classifier_reply_ranking.py#L60-L67" target="_blank" rel="noopener">classifier_reply_ranking.py</a>).</p>
+        <p>La note de Grok est enregistrée comme score de classement de la réponse. Une note de 0 colle l'étiquette <code>RiskyHighVizReply</code> sur la réponse. Les comptes très influents et les comptes certifiés gris sont exemptés (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/flows/reply_spam/task_write.py#L108-L148" target="_blank" rel="noopener">grox/flows/reply_spam/task_write.py</a>).</p>
+        <p>C'est le seul endroit du code publié où des blocages reçus peuvent jouer sur la visibilité d'un compte auprès des autres, et seulement pour ses <strong>réponses</strong>. Plusieurs points restent inconnus : ce qui rend un blocage « légitime », quel poids Grok accorde à ce chiffre, et quel service lit ensuite le score et l'étiquette.</p>
+
+        <h3>Le levier le plus fort : la suspension</h3>
+        <p>Le service anti-abus peut aussi <strong>suspendre</strong> des comptes, à partir d'étiquettes produites par des classifieurs (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/abuse-enforcement-service/service-lib/rules/enforcement_user.yaml" target="_blank" rel="noopener">enforcement_user.yaml</a>). Deux de ces classifieurs portent un nom qui évoque les signalements : <code>panda_reports_embedding_v10_rough_spam</code> entraîne une suspension temporaire pour manipulation de la plateforme (ligne 47), <code>cse_reports_embedding</code> une suspension définitive pour exploitation sexuelle de mineurs (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/abuse-enforcement-service/service-lib/rules/enforcement_post.yaml#L71-L76" target="_blank" rel="noopener">enforcement_post.yaml</a>). Le fonctionnement de ces classifieurs n'est pas publié, mais aucune règle de ce service ne lit directement les blocages, les masquages ou les « pas intéressé ».</p>
+      </div>
+    </section>
+
+    <!-- Campagnes -->
+    <section class="section section--cream" id="campagnes">
+      <div class="container prose">
+        <h2>Pourquoi une campagne coordonnée marche mal</h2>
+        <p>Imaginons que des milliers de personnes se mettent d'accord pour bloquer, masquer ou ignorer un compte. Le code contient plusieurs protections qui limitent fortement l'effet :</p>
+
+        <ol class="facts">
+          <li>
+            <h3>Tout est personnalisé</h3>
+            <p>Les poids s'appliquent à <em>votre</em> probabilité d'agir. D'après X lui-même, dans un commentaire du code, les gestes des militants apprennent surtout au modèle à moins montrer ce contenu… aux militants et aux gens qui leur ressemblent. Le public habituel du compte n'est presque pas touché.</p>
+          </li>
+          <li>
+            <h3>Seul le fil d'accueil compte</h3>
+            <p>D'après le commentaire de <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/xai-value-model/scoring.rs#L44-L56" target="_blank" rel="noopener">scoring.rs</a>, une action ne compte pour le classement que si elle a lieu sur un post qui vous a été servi dans votre fil d'accueil. Aller chercher le post via un lien partagé dans un groupe n'a aucun effet sur le classement. Attention : cette protection vaut pour le classement seulement. Les calculs de réputation comptent les blocages et les signalements d'où qu'ils viennent.</p>
+          </li>
+          <li>
+            <h3>On compte des personnes, plafonnées</h3>
+            <p>Dans les calculs de réputation, chaque personne ne compte qu'une fois par compte, et pour 100 comptes au maximum. Les blocages en masse sont dilués.</p>
+          </li>
+          <li>
+            <h3>Les likes extérieurs compensent</h3>
+            <p>Les ratios divisent par le nombre de personnes extérieures qui likent le compte. Un compte populaire encaisse beaucoup de signalements avant de bouger.</p>
+          </li>
+          <li>
+            <h3>Les signalements sont en partie filtrés</h3>
+            <p>Pour les signalements de spam, X calcule deux versions : une qui ne garde que les signalements jugés légitimes (<code>legitOnly</code>), une autre qui les garde tous. Les deux sont utilisées (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/rate_based_labels/RateBasedLabels.scala#L67-L70" target="_blank" rel="noopener">RateBasedLabels.scala</a>). Les autres signalements ne sont retenus que s'ils proviennent de l'outil de traitement des abus (<code>AbuseTriageTool</code>, <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/rate_based_labels/RateBasedLabels.scala#L142-L158" target="_blank" rel="noopener">getReports</a>). Comment X juge un signalement « légitime » n'est pas publié.</p>
+          </li>
+          <li>
+            <h3>Les gros comptes sont exemptés</h3>
+            <p>Le service anti-abus ignore les comptes au-dessus d'un certain nombre d'abonnés ou d'un certain score de crédibilité (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/abuse-enforcement-service/service-lib/rules/enforcement_user.yaml#L19-L33" target="_blank" rel="noopener">enforcement_user.yaml</a>), sauf pour certains posts où cette exemption peut être levée. Les seuils réels sont cachés : le code publié les remplace par la valeur fictive <code>12.34</code>, « pour limiter le contournement ». Les règles botmaker d'Agatha exemptent aussi les comptes très influents et les comptes certifiés gris.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Piège -->
+    <section class="section" id="piege">
+      <div class="container prose">
+        <h2>Le piège : répondre pour critiquer</h2>
+        <p>Si votre but est de voir moins un contenu, le pire réflexe est d'y répondre ou de le citer, même pour le critiquer. Le modèle prédit seulement si vous allez répondre ou citer. Rien dans le code de classement n'analyse si vous êtes d'accord ou non. La réponse et la citation ont chacune un poids de 5, contre 0,66 pour le like dans home-mixer et 0,5 dans vm-ranker (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/params/param.rs#L396-L403" target="_blank" rel="noopener">like et réponse</a>, <a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/params/param.rs#L446" target="_blank" rel="noopener">citation</a>). Si vous et l'auteur vous suivez mutuellement, une réponse à l'un de ses posts originaux reçoit même un bonus de +15.</p>
+        <p>On peut en déduire que répondre apprend au modèle que ce contenu vous fait réagir, et qu'il risque de vous en montrer davantage. Une citation est en plus visible par vos abonnés.</p>
+
+        <div class="callout callout--yellow">
+          <h3>Pour voir moins un contenu, dans l'ordre</h3>
+          <ol>
+            <li>Ne pas répondre, ne pas citer, ne pas republier pour se moquer.</li>
+            <li>Cliquer sur « pas intéressé » plutôt que simplement l'ignorer.</li>
+            <li>Masquer ou bloquer pour faire disparaître l'auteur de votre fil.</li>
+            <li>Signaler uniquement ce qui enfreint vraiment les règles : c'est le signal qui pèse le plus sur la réputation d'un compte, et il est en partie filtré.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Limites -->
+    <section class="section section--cream" id="limites">
+      <div class="container prose">
+        <h2>Ce qu'on ne sait pas</h2>
+        <ul>
+          <li><strong>Le code publié n'est pas tout le code.</strong> X n'a publié qu'une partie de ses systèmes. Il est possible que <code>BlocksPerFav</code> serve dans un programme interne absent du dépôt. On ne sait pas non plus comment l'étiquette <code>BlinkWorst</code> est attribuée, ni quels services lisent les étiquettes de post <code>AGATHA_SPAM</code> et <code>RiskyHighVizReply</code> ou le score des réponses calculé par Grok.</li>
+          <li><strong>Les valeurs de production sont modifiables.</strong> Les poids, les seuils des étiquettes et les seuils d'exemption peuvent être changés sans republier le code.</li>
+          <li><strong>L'effet direct de « montrer moins » n'est pas publié.</strong> On voit que le retour est envoyé avec une durée de 30 jours et qu'il sert à entraîner le modèle, pas ce que X fait ensuite sur les posts de l'auteur.</li>
+          <li><strong>Les classifieurs du service anti-abus ne sont pas publiés.</strong> On voit les sanctions qu'ils déclenchent, pas ce qu'ils regardent.</li>
+          <li><strong>Les modèles sont des boîtes noires.</strong> Le code de Phoenix est publié, mais pas le modèle entraîné. On sait quelles données il reçoit et comment ses prédictions sont combinées, pas ce qu'il a réellement appris.</li>
+          <li><strong>Nous n'avons pas tout lu.</strong> Le dépôt est très gros. Un exemple : X enregistre pour chaque post le nombre de blocages et de signalements reçus (<code>block_count</code>, <code>report_count</code> dans phoenix-rankall), mais nous n'avons trouvé aucun code publié qui s'en serve pour classer. Nous n'avons pas vérifié non plus si ces totaux servent ailleurs, comme dans les tendances.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Sources -->
+    <section class="section section--dark" id="sources">
+      <div class="container oss">
+        <div class="oss__text">
+          <p class="tag tag--small">Sources</p>
+          <h2>Vérifiez par vous-même.</h2>
+          <p>Chaque affirmation vérifiable de cette page renvoie vers le code de X. Les déductions et les zones d'ombre sont signalées comme telles. Les liens pointent vers la version du 28 octobre 2026, pour que les numéros de ligne restent justes même si le dépôt évolue.</p>
+        </div>
+        <div class="oss__links">
+          <a class="link-row link-row--yellow" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/params/param.rs#L490-L514" target="_blank" rel="noopener">
+            Les poids négatifs
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--red" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/agatha/scalding/labels/rate_based_labels/RateBasedLabels.scala" target="_blank" rel="noopener">
+            Les ratios de réputation
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--outline" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/author_rules.rs" target="_blank" rel="noopener">
+            Les règles de visibilité
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--white" href="https://github.com/xai-org/x-algorithm/tree/5ed796374ea48ee26058aab66ab10c266bea2bef" target="_blank" rel="noopener">
+            Tout le dépôt x-algorithm
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 6 2 12l6 6M16 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">
+        <span class="brand__logo brand__logo--white" aria-hidden="true"></span>
+        <strong>Barrage</strong>
+        <span>Projet indépendant, non affilié à X, Instagram ou TikTok.</span>
+      </p>
+      <p class="footer__links">
+        <a href="index.html">Retour à l'accueil</a>
+        <a href="https://github.com/barrage-app/Barrage" target="_blank" rel="noopener">Code source et liste sur GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
