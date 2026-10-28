@@ -179,6 +179,27 @@ p { margin: 0; }
 }
 .screen img { width: 100%; height: auto; }
 
+/* Lien « Nous suivre », en haut à droite de la partie rouge, sous le bouton Installer. */
+.hero { position: relative; }
+.hero__follow {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.follow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  opacity: .92;
+}
+.follow:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---------- Sections ---------- */
 
 .section { padding: 96px 0; }
@@ -682,7 +703,9 @@ a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
 @media (max-width: 560px) {
   body { font-size: 16px; }
-  .hero { padding: 48px 0 72px; }
+  .hero { padding: 56px 0 72px; }
+  .hero__follow { top: 18px; }
+  .follow { font-size: 14px; }
   .hero__lead { font-size: 18px; }
   .hero__actions .btn { width: 100%; }
   .btn--lg { white-space: normal; text-align: center; }
@@ -705,6 +728,8 @@ a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
   .nav__links { gap: 12px; }
   .nav__share { padding: 8px 10px; }
   .nav__label { display: none; }
+  /* L'extension ne s'installe pas sur téléphone. */
+  .nav__install { display: none; }
 }
 
 @media (max-width: 360px) {
