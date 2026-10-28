@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barrage : vos réseaux sociaux, vos règles</title>
+  <meta name="description" content="Barrage bloque automatiquement les comptes que vous ne voulez plus voir, à partir d'une liste collaborative et open source. Extension gratuite pour Chrome, Brave, Edge.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="#top" aria-label="Barrage, accueil">
+        <span class="brand__logo" aria-hidden="true"></span>
+        <span class="brand__name">Barrage</span>
+      </a>
+      <nav class="nav__links" aria-label="Navigation principale">
+        <a href="#fonctionnement">Fonctionnement</a>
+        <a href="#installation">Installation</a>
+        <a href="#open-source">Open source</a>
+        <a href="https://github.com/barrage-app/Barrage">GitHub</a>
+        <a class="btn btn--yellow btn--sm" href="#installation">Installer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero__inner">
+        <div class="hero__text">
+          <p class="tag">Extension pour Chrome, Brave, Edge et tout navigateur Chromium</p>
+          <h1>Vos réseaux sociaux, vos règles.</h1>
+          <p class="hero__lead"><strong>Barrage</strong> bloque automatiquement les comptes que vous ne voulez plus voir, à partir d'une liste collaborative et open source. Vous l'installez une fois, il travaille pour vous ensuite.</p>
+          <div class="hero__actions">
+            <a class="btn btn--yellow btn--lg btn--shadow" href="#installation">Installer Barrage</a>
+            <a class="btn btn--outline btn--lg" href="https://github.com/barrage-app/Barrage">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 6 2 12l6 6M16 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Code source sur GitHub
+            </a>
+          </div>
+          <p class="hero__note"><strong>Gratuit et open source.</strong> Le code de l'extension et la liste des comptes sont publics, chacun peut les relire et y contribuer.</p>
+        </div>
+        <div class="hero__visual">
+          <div class="screen">
+            <img src="assets/hero.png" width="746" height="771" alt="Page d'options de Barrage : notifications, réseaux et liste des comptes à bloquer.">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fonctionnement -->
+    <section class="section section--cream" id="fonctionnement">
+      <div class="container">
+        <h2>Comment ça marche</h2>
+        <p class="section__lead">Ouvrez x.com avec votre compte connecté, Barrage fait le reste. Un compte repéré dans votre fil est masqué tout de suite, puis bloqué.</p>
+
+        <div class="features">
+          <article class="card">
+            <div class="card__head">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </span>
+              <h3>Au fur et à mesure</h3>
+            </div>
+            <p>Un compte n'est bloqué que lorsqu'il apparaît dans votre fil.</p>
+          </article>
+          <article class="card">
+            <div class="card__head">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="2.5"/></svg>
+              </span>
+              <h3>Vous gardez la main</h3>
+            </div>
+            <p>Désactivez un compte de la liste, débloquez-le en un clic, et annulez depuis la notification affichée sur X.</p>
+          </article>
+          <article class="card">
+            <div class="card__head">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6"/></svg>
+              </span>
+              <h3>Vos propres comptes</h3>
+            </div>
+            <p>Ajoutez vous-même des comptes à bloquer depuis la page d'options, en plus de la liste partagée. Ils restent dans votre navigateur.</p>
+          </article>
+          <article class="card card--wide">
+            <div class="card__head">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5.8"/></svg>
+              </span>
+              <h3>Une liste partagée</h3>
+            </div>
+            <p>La liste est maintenue sur GitHub. Pour ajouter un compte à la liste de la communauté, ouvrez une pull request sur le dépôt : elle est relue, puis intégrée pour tous les utilisateurs.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Installation -->
+    <section class="section" id="installation">
+      <div class="container">
+        <h2>Installation en 5 étapes</h2>
+        <p class="section__lead">Barrage ne passe pas par le Chrome Web Store : on le charge en mode développeur. Comptez une minute.</p>
+
+        <ol class="steps">
+          <li class="step">
+            <div class="step__text">
+              <span class="step__num">1</span>
+              <div>
+                <h3>Téléchargez Barrage</h3>
+                <p>Récupérez l'archive puis décompressez-la. Rangez le dossier Barrage dans un endroit où il restera : le navigateur en a besoin en permanence.</p>
+              </div>
+            </div>
+            <div class="step__visual">
+              <a class="btn btn--red btn--lg btn--shadow" href="https://github.com/barrage-app/Barrage/releases/latest/download/barrage.zip">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Télécharger Barrage (.zip)
+              </a>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="step__text">
+              <span class="step__num">2</span>
+              <div>
+                <h3>Ouvrez la page des extensions</h3>
+                <p>Menu ⋮ en haut à droite, puis Extensions et Gérer les extensions.</p>
+                <p>Plus rapide : tapez <code>chrome://extensions</code> dans la barre d'adresse (<code>brave://</code> ou <code>edge://</code> selon votre navigateur).</p>
+              </div>
+            </div>
+            <div class="step__visual">
+              <div class="mock mock--menu" aria-hidden="true">
+                <div class="submenu">
+                  <svg class="arrow" viewBox="0 0 40 70"><path d="M30 2 12 58M4 46l8 14 12-10" fill="none" stroke="#7ac943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <div class="submenu__item is-hover">Gérer les extensions</div>
+                  <div class="submenu__item">Accéder au Chrome Web Store</div>
+                </div>
+                <ul class="menu">
+                  <li class="menu__promo">Définir Chrome comme navigateur par défaut</li>
+                  <li class="sep"></li>
+                  <li>Nouvel onglet <kbd>⌘T</kbd></li>
+                  <li>Nouvelle fenêtre <kbd>⌘N</kbd></li>
+                  <li>Nouvelle fenêtre de navigation privée <kbd>⇧⌘N</kbd></li>
+                  <li class="sep"></li>
+                  <li class="menu__profile">Profil <span class="pill">Non connecté</span></li>
+                  <li>Mots de passe et saisie automatique <kbd>›</kbd></li>
+                  <li>Historique <kbd>›</kbd></li>
+                  <li>Téléchargements <kbd>⌥⌘L</kbd></li>
+                  <li>Favoris et listes <kbd>›</kbd></li>
+                  <li>Groupes d'onglets <kbd>›</kbd></li>
+                  <li class="is-hover">Extensions <kbd>›</kbd></li>
+                  <li>Supprimer les données de navigation… <kbd>⇧⌘⌫</kbd></li>
+                  <li class="sep"></li>
+                  <li>Zoom <kbd>− 100 % +</kbd></li>
+                  <li class="sep"></li>
+                  <li>Imprimer… <kbd>⌘P</kbd></li>
+                  <li>Rechercher et modifier <kbd>›</kbd></li>
+                  <li>Caster, enregistrer et partager <kbd>›</kbd></li>
+                  <li>Plus d'outils <kbd>›</kbd></li>
+                  <li class="sep"></li>
+                  <li>Aide <kbd>›</kbd></li>
+                  <li>Paramètres <kbd>⌘,</kbd></li>
+                </ul>
+              </div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="step__text">
+              <span class="step__num">3</span>
+              <div>
+                <h3>Activez le mode développeur</h3>
+                <p>L'interrupteur se trouve en haut à droite de la page des extensions.</p>
+              </div>
+            </div>
+            <div class="step__visual">
+              <div class="mock mock--dev" aria-hidden="true">
+                <div class="dev__bar">
+                  <span class="dev__omni">
+                    <svg viewBox="0 0 24 24" width="22" height="22"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" fill="none" stroke="#333" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  </span>
+                  <svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#d7261e" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="#d7261e" stroke-width="2"/><path d="M6.5 18.5a6.5 6.5 0 0 1 11 0" fill="none" stroke="#d7261e" stroke-width="2"/></svg>
+                  <span class="dots">⋮</span>
+                </div>
+                <div class="dev__row">
+                  Mode développeur
+                  <span class="switch"></span>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="step__text">
+              <span class="step__num">4</span>
+              <div>
+                <h3>Cliquez sur « Charger l'extension non empaquetée »</h3>
+                <p>Le bouton apparaît en haut à gauche dès que le mode développeur est actif.</p>
+              </div>
+            </div>
+            <div class="step__visual">
+              <div class="mock mock--ext" aria-hidden="true">
+                <div class="ext__title">
+                  <span class="chrome-logo"></span>
+                  Extensions
+                  <svg class="arrow" viewBox="0 0 80 50"><path d="M76 4 14 40M10 22l2 20 20-2" fill="none" stroke="#7ac943" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="ext__buttons">
+                  <span class="ext__btn is-focus">Charger l'extension non empaquetée</span>
+                  <span class="ext__btn">Empaqueter l'extension</span>
+                </div>
+                <div class="ext__nav">
+                  <span class="ext__navitem is-active">Mes extensions</span>
+                  <span class="ext__navitem">Raccourcis clavier</span>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="step">
+            <div class="step__text">
+              <span class="step__num">5</span>
+              <div>
+                <h3>Sélectionnez le dossier Barrage</h3>
+                <p>Choisissez le dossier décompressé à l'étape 1, celui qui contient le fichier manifest.json, puis validez.</p>
+              </div>
+            </div>
+            <div class="step__visual">
+              <div class="mock mock--picker" aria-hidden="true">
+                <div class="picker__head">Téléchargements</div>
+                <div class="picker__row is-selected">
+                  <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                  Barrage
+                </div>
+                <div class="picker__row">
+                  <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                  Documents
+                </div>
+                <div class="picker__foot"><span class="picker__btn">Sélectionner</span></div>
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="ready">
+          <span class="ready__check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="#ffd43f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3>C'est prêt.</h3>
+            <p>Profitez d'un fil plus sain : Barrage veille en arrière-plan, vous n'avez plus qu'à scroller tranquille.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Open source -->
+    <section class="section section--dark" id="open-source">
+      <div class="container oss">
+        <div class="oss__text">
+          <p class="tag tag--small">Open source</p>
+          <h2>Tout est sur GitHub.</h2>
+          <p>Le code de Barrage est ouvert : vous pouvez vérifier ce que fait l'extension avant de l'installer. La liste des comptes vit dans le même dépôt et évolue par pull requests, relues avant d'être intégrées.</p>
+        </div>
+        <div class="oss__links">
+          <a class="link-row link-row--yellow" href="https://github.com/barrage-app/Barrage">
+            Voir le dépôt GitHub
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="link-row link-row--red" href="https://github.com/barrage-app/Barrage/tree/main/lists">
+            Proposer un compte à ajouter
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </a>
+          <a class="link-row link-row--outline" href="https://github.com/barrage-app/Barrage/issues/new">
+            Signaler un problème
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v6.5M12 16.5v.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">
+        <span class="brand__logo brand__logo--white" aria-hidden="true"></span>
+        <strong>Barrage</strong>
+        <span>Projet indépendant, non affilié à X, Instagram ou TikTok.</span>
+      </p>
+      <p class="footer__links">
+        <a href="mailto:barrage.app@protonmail.com?subject=Demande%20de%20retrait%20de%20la%20liste">Demander un retrait de la liste</a>
+        <a href="https://github.com/barrage-app/Barrage">Code source et liste sur GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
