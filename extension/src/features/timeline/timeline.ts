@@ -14,7 +14,7 @@
 import { contextAlive } from "../../core/context.ts";
 import { active, getState, onStateChange, resultChanges, strings, type StateChanges } from "../../core/state.ts";
 import { write } from "../../core/write.ts";
-import { accountId } from "../blocking/api.ts";
+import { accountId, pageAccount } from "../blocking/api.ts";
 import { isPending, resultOf, type Results } from "../blocking/queue.ts";
 import { handleFromHref, handleFromUserNameText, profileHandleFromPath } from "./authors.ts";
 import {
@@ -30,8 +30,7 @@ import "./timeline.css";
 
 let listed = new Set<string>();
 let results: Results = Object.create(null);
-/** Compte X de la page, au chargement, et préfixe de ses clés de stockage. */
-const account = accountId();
+/** Préfixe des clés de stockage du compte X de la page. */
 let prefix = "";
 
 /**
@@ -49,11 +48,17 @@ class Batch {
   }
 
   flush(): void {
-    if (!this.pending.size || accountId() !== account) return;
+    if (!this.pending.size) return;
+    // La session a changé de compte : ce que la page affiche ne vaut plus pour
+    // le compte connecté, rien n'est envoyé. Le rechargement de la page reprendra.
+    if (accountId() !== pageAccount()) {
+      this.pending.clear();
+      return;
+    }
     const batch = [...this.pending];
     this.pending = new Set();
     for (const handle of batch) this.sent.add(handle);
-    void write(this.name, batch, account).catch(() => {
+    void write(this.name, batch, pageAccount()).catch(() => {
       for (const handle of batch) this.sent.delete(handle);
     });
   }
@@ -199,7 +204,7 @@ function scheduleScan(): void {
 
 /** Liste suivie changée : tout est relu. */
 async function loadList(): Promise<void> {
-  const state = await getState(account);
+  const state = await getState(pageAccount());
   // Un compte désactivé n'est plus masqué.
   listed = new Set(active(state));
   results = state.results;

@@ -96,14 +96,26 @@ export function failure(previous: Result | undefined, message: string, now: numb
   return { state: "failed", at: now, message, attempts };
 }
 
+/** Compte bloqué sur X, par Barrage ou déjà avant lui. */
+export function isBlocked(result: Result | undefined): boolean {
+  return result?.state === "blocked" || result?.state === "already_blocked";
+}
+
+/**
+ * Comptes bloqués par Barrage parmi ceux donnés. Un compte que l'utilisateur
+ * bloquait avant Barrage n'en fait pas partie : il n'est jamais débloqué.
+ */
+export function blockedByBarrage(handles: readonly string[], results: Results): string[] {
+  return handles.filter((h) => resultOf(results, h)?.state === "blocked");
+}
+
 /**
  * Comptes passés à « bloqué par Barrage » entre deux versions des résultats.
- * Un compte déjà bloqué avant Barrage n'en fait pas partie.
+ * Un compte déjà bloqué avant Barrage n'en fait pas partie, ni un compte déjà
+ * bloqué attribué ensuite à Barrage (voir repairInheritedBlocks).
  */
 export function newlyBlocked(before: Results, after: Results): string[] {
-  return Object.keys(after).filter(
-    (h) => resultOf(after, h)?.state === "blocked" && resultOf(before, h)?.state !== "blocked",
-  );
+  return blockedByBarrage(Object.keys(after), after).filter((h) => !isBlocked(resultOf(before, h)));
 }
 
 /** Comptes passés de « bloqué par Barrage » à « débloqué » entre deux versions. */

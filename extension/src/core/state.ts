@@ -86,7 +86,9 @@ const RESULT_PREFIX = "result:";
 // Chaque compte X a son propre état de blocage : un compte bloqué depuis l'un
 // ne l'est pas sur l'autre. Ses clés portent le préfixe `acct:<id>/`, sauf
 // celles du premier compte vu (`legacy`), qui garde les clés sans préfixe
-// d'avant la prise en charge de plusieurs comptes : rien n'est déplacé.
+// d'avant la prise en charge de plusieurs comptes : rien n'est déplacé. Tant
+// qu'aucun compte n'est vu, les clés sans préfixe valent pour le compte
+// connecté, qui deviendra ce premier compte : son préfixe ne change jamais.
 const ACCOUNT_PREFIX_RE = /^acct:\d+\//;
 
 /** Champs de l'état propres à chaque compte X. La liste et les réglages sont communs. */
@@ -96,7 +98,17 @@ type AccountField = (typeof ACCOUNT_FIELDS)[number];
 
 /** Préfixe des clés d'un compte X. */
 export function scopePrefix(account: string | null, legacy: string | null): string {
-  return account === null || account === legacy ? "" : `acct:${account}/`;
+  return account === null || legacy === null || account === legacy ? "" : `acct:${account}/`;
+}
+
+/**
+ * Compte X à lire et préfixe de ses clés, d'après les clés `account` et
+ * `legacy` stockées. Par défaut, le dernier compte connecté sur x.com.
+ */
+function scopeOf(stored: Record<string, unknown>, account?: string | null): { account: string | null; prefix: string } {
+  const current = account ?? (typeof stored.account === "string" ? stored.account : null);
+  const legacy = typeof stored.legacy === "string" ? stored.legacy : null;
+  return { account: current, prefix: scopePrefix(current, legacy) };
 }
 
 /** Champ de l'état porté par une clé de stockage, préfixe de compte retiré. */
@@ -192,14 +204,22 @@ export function unblockQueue(state: State): string[] {
   ];
 }
 
+/** Tout le contenu du stockage, à lire avec readState. */
+export async function readStorage(): Promise<Record<string, unknown>> {
+  return (await chrome.storage.local.get(null)) as Record<string, unknown>;
+}
+
 /**
  * Tout l'état en une lecture, valeurs corrompues ramenées aux défauts.
  * @param account compte X à lire ; par défaut, le dernier connecté sur x.com
  */
 export async function getState(account?: string | null): Promise<State> {
-  const stored = (await chrome.storage.local.get(null)) as Record<string, unknown>;
-  const current = account ?? (typeof stored.account === "string" ? stored.account : null);
-  const prefix = scopePrefix(current, typeof stored.legacy === "string" ? stored.legacy : null);
+  return readState(await readStorage(), account);
+}
+
+/** État d'un compte X d'après le contenu du stockage : plusieurs comptes pour une seule lecture. */
+export function readState(stored: Record<string, unknown>, account?: string | null): State {
+  const { account: current, prefix } = scopeOf(stored, account);
   const results: Results = Object.create(null);
   for (const [key, value] of Object.entries(stored)) {
     const handle = resultHandle(key, prefix);
@@ -212,7 +232,7 @@ export async function getState(account?: string | null): Promise<State> {
   const error = own("error");
   return {
     account: current,
-    accounts: isRecord(stored.accounts) ? (stored.accounts as Record<string, Account>) : {},
+    accounts: accountsOf(stored),
     prefix,
     handles: [...new Set([...(remote ?? DEFAULT_HANDLES), ...added])],
     added,
@@ -230,11 +250,23 @@ export async function getState(account?: string | null): Promise<State> {
   };
 }
 
+/** Comptes X connus, d'après le contenu du stockage. */
+export function accountsOf(stored: Record<string, unknown>): Record<string, Account> {
+  return isRecord(stored.accounts) ? (stored.accounts as Record<string, Account>) : {};
+}
+
+/**
+ * État de chaque compte X connu, d'après le contenu du stockage. Sans compte
+ * connu, celui des clés sans préfixe, qui reviendra au premier compte vu.
+ */
+export function accountStates(stored: Record<string, unknown>): State[] {
+  const accounts = Object.keys(accountsOf(stored));
+  return accounts.length ? accounts.map((account) => readState(stored, account)) : [readState(stored)];
+}
+
 /** Préfixe des clés d'un compte X, sans lire tout l'état ; par défaut, le dernier connecté. */
 export async function prefixFor(account?: string | null): Promise<string> {
-  const { account: current, legacy } = await chrome.storage.local.get({ account: null, legacy: null });
-  const resolved = account ?? (typeof current === "string" ? current : null);
-  return scopePrefix(resolved, typeof legacy === "string" ? legacy : null);
+  return scopeOf(await chrome.storage.local.get({ account: null, legacy: null }), account).prefix;
 }
 
 export type StateChanges = { [key: string]: chrome.storage.StorageChange };

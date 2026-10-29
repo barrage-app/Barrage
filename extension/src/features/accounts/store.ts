@@ -2,7 +2,7 @@
 // automatique », blocage et déblocage demandés à la main. La liste et les
 // interrupteurs valent pour tous les comptes X ; un blocage ou un déblocage
 // demandé à la main vise le compte X affiché, le dernier connecté sur x.com.
-import { getState, resultKey, scoped } from "../../core/state.ts";
+import { accountStates, getState, readStorage, resultKey, scoped } from "../../core/state.ts";
 import { resultOf } from "../blocking/queue.ts";
 
 export type AddResult = { added: string[]; existing: string[] };
@@ -62,15 +62,15 @@ export const requestUnblock = (handle: string): Promise<void> => disable(handle,
 /**
  * Active ou désactive un compte. Désactiver un compte que Barrage a bloqué le
  * met en file de déblocage ; un compte que l'utilisateur bloquait déjà avant
- * Barrage n'est jamais débloqué. Réactiver annule un déblocage pas encore fait.
+ * Barrage n'est jamais débloqué. Réactiver annule un déblocage pas encore
+ * fait, sur chaque compte X : l'interrupteur vaut pour tous.
  */
 export async function setEnabled(handle: string, enabled: boolean): Promise<void> {
   if (!enabled) return disable(handle, false);
-  const { disabled, unblock, prefix } = await getState();
-  await chrome.storage.local.set(
-    scoped(prefix, {
-      disabled: disabled.filter((h) => h !== handle),
-      unblock: unblock.filter((h) => h !== handle),
-    }),
-  );
+  const states = accountStates(await readStorage());
+  const values: Record<string, unknown> = { disabled: states[0]?.disabled.filter((h) => h !== handle) ?? [] };
+  for (const { unblock, prefix } of states) {
+    if (unblock.includes(handle)) Object.assign(values, scoped(prefix, { unblock: unblock.filter((h) => h !== handle) }));
+  }
+  await chrome.storage.local.set(values);
 }

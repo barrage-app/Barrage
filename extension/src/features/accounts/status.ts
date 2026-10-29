@@ -29,22 +29,20 @@ const text = (
 ): Status => ({ label, className, action, category });
 
 const BLOCKED: Status = { label: "Bloqué", className: "", action: "unblock", category: "blocked", tag: "blocked" };
-const BLOCKED_BEFORE: Status = { ...BLOCKED, note: "avant Barrage" };
 const UNBLOCKING = text("Déblocage en cours…", "disabled", "muted");
 const VISIBLE: Status = { label: "Visible", className: "", action: "block", category: "visible", tag: "visible" };
 
 /**
- * Compte dont le blocage automatique est sur On. « Bloqué » : bloqué par
- * l'extension. « Bloqué avant Barrage » : l'utilisateur le bloquait déjà,
- * Barrage n'a rien envoyé.
+ * Compte dont le blocage automatique est sur On. « Bloqué », qu'il l'ait été
+ * par l'extension ou déjà par l'utilisateur : la distinction, qui décide d'un
+ * déblocage au passage sur Off, n'est pas affichée.
  */
 export function describe(result: Result | undefined, queued: boolean): Status {
   if (queued && isPending(result)) return text("Blocage en cours…", "visible", "muted");
   switch (result?.state) {
     case "blocked":
-      return BLOCKED;
     case "already_blocked":
-      return BLOCKED_BEFORE;
+      return BLOCKED;
     case "not_found":
       return text(result.message ?? "Introuvable", "problem", "warn", "block");
     case "failed":
@@ -66,7 +64,7 @@ export function describeDisabled(result: Result | undefined, unblocking: boolean
       // Hors file de déblocage : X a refusé, « Débloquer » permet de réessayer.
       return { ...BLOCKED, note: "déblocage refusé" };
     case "already_blocked":
-      return BLOCKED_BEFORE;
+      return BLOCKED;
     default:
       return text("Désactivé", "disabled", "muted");
   }

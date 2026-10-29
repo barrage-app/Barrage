@@ -6,8 +6,9 @@
 // version publiée de l'extension est relevée en même temps.
 import { LISTS_REFRESH_MINUTES, LISTS_URL } from "../../core/config.ts";
 import { isRefreshListsRequest } from "../../core/messages.ts";
-import { getState, scoped, strings, type State } from "../../core/state.ts";
+import { accountStates, readStorage, scoped, strings, type State } from "../../core/state.ts";
 import { DEFAULT_HANDLES } from "../accounts/defaults.ts";
+import { blockedByBarrage } from "../blocking/queue.ts";
 import { compareLists, parseList } from "./remote.ts";
 import { serial } from "../../core/writer.ts";
 import { checkLatestVersion } from "../updates/check.ts";
@@ -18,36 +19,35 @@ const BUNDLED_KEY = "bundled";
 
 /**
  * Remplace la liste partagée `current` par `next` : les comptes retirés que
- * Barrage a bloqués passent en file de déblocage. Renvoie false si la nouvelle
- * liste est refusée.
+ * Barrage a bloqués passent en file de déblocage, sur chaque compte X où il
+ * les a bloqués. Renvoie false si la nouvelle liste est refusée.
+ * @param states état de chaque compte X, voir accountStates : la liste et les
+ *   réglages, communs, se lisent sur n'importe lequel
  */
 async function replaceList(
-  state: State,
+  states: readonly State[],
   current: readonly string[],
   next: readonly string[],
   extra: Record<string, unknown>,
 ): Promise<boolean> {
-  const update = compareLists(current, next, state.added, state.results);
+  const shared = states[0] as State;
+  const update = compareLists(current, next, shared.added);
   if (!update.ok) {
     console.warn("[Barrage] liste partagée ignorée :", update.reason);
     return false;
   }
   const removed = new Set(update.removed);
-  // Chaque compte X a ses propres blocages : ceux à débloquer se comptent pour chacun.
-  const accounts = Object.keys(state.accounts);
   const values: Record<string, unknown> = {
     ...extra,
     // Un compte sorti de la liste quitte aussi les réglages qui le visaient.
-    disabled: state.disabled.filter((h) => !removed.has(h)),
+    disabled: shared.disabled.filter((h) => !removed.has(h)),
   };
-  for (const account of accounts.length ? accounts : [null]) {
-    const own = await getState(account);
-    const { retire } = compareLists(current, next, own.added, own.results) as typeof update;
+  for (const own of states) {
     Object.assign(
       values,
       scoped(own.prefix, {
         // Un déblocage demandé à la main reste dû, voir unblockQueue.
-        retired: [...new Set([...own.retired, ...retire])],
+        retired: [...new Set([...own.retired, ...blockedByBarrage(update.removed, own.results)])],
         seen: own.seen.filter((h) => !removed.has(h)),
       }),
     );
@@ -62,11 +62,11 @@ async function replaceList(
  * il le serait de la liste en ligne.
  */
 async function syncBundled(): Promise<void> {
-  const stored = await chrome.storage.local.get(BUNDLED_KEY);
+  const stored = await readStorage();
   const previous = Array.isArray(stored[BUNDLED_KEY]) ? strings(stored[BUNDLED_KEY]) : null;
   const bundled = { [BUNDLED_KEY]: [...DEFAULT_HANDLES] };
-  const state = await getState();
-  if (previous && state.remote === null && (await replaceList(state, previous, DEFAULT_HANDLES, bundled))) return;
+  const states = accountStates(stored);
+  if (previous && states[0]?.remote === null && (await replaceList(states, previous, DEFAULT_HANDLES, bundled))) return;
   await chrome.storage.local.set(bundled);
 }
 
@@ -88,8 +88,8 @@ async function refreshList(): Promise<void> {
     return;
   }
   await serial(async () => {
-    const state = await getState();
-    await replaceList(state, state.remote ?? DEFAULT_HANDLES, parsed.handles, { remote: parsed.handles });
+    const states = accountStates(await readStorage());
+    await replaceList(states, states[0]?.remote ?? DEFAULT_HANDLES, parsed.handles, { remote: parsed.handles });
   });
 }
 

@@ -11,6 +11,7 @@
 // suit le compte de la session, relu à chaque tour, puisque changer de compte
 // sur x.com vaut pour tous les onglets.
 import {
+  AUDIT_INTERVAL_MS,
   AUTH_RETRY_MS,
   CHECK_MAX_AGE_MS,
   DELAY_JITTER,
@@ -28,7 +29,15 @@ import {
   type BlockingError,
   type State,
 } from "../../core/state.ts";
-import { accountHandle, accountId, blockUser, lookupBlocking, sessionId, unblockUser } from "./api.ts";
+import {
+  accountHandle,
+  accountId,
+  blockUser,
+  lookupBlocking,
+  pageAccount,
+  sessionId,
+  unblockUser,
+} from "./api.ts";
 import type { Lookup, Outcome } from "./outcome.ts";
 import { nextPending, uncheckedPending, type Result, type Results } from "./queue.ts";
 import { write } from "../../core/write.ts";
@@ -42,25 +51,36 @@ const checked = new Map<string, number>();
 /** Compte X pour lequel `checked` vaut. */
 let checkedFor: string | null = null;
 
+/** Dernier compte X (et son @) déclaré par cet onglet, voir ensureAccount. */
+let ensured = "";
+
 /**
  * Déclare le compte X de la session, s'il est nouveau ou n'est plus celui
- * affiché dans les options. Lecture légère : seules deux clés.
+ * affiché dans les options. Le @ vient de la barre latérale de la page : il
+ * n'est fiable que si la session est restée sur le compte du chargement.
+ * Une fois par compte et par onglet, sauf @ découvert entre-temps.
  */
-async function ensureAccount(account: string | null): Promise<void> {
-  if (!account) return;
+async function ensureAccount(account: string): Promise<void> {
+  const handle = account === pageAccount() ? accountHandle() : null;
+  const key = `${account}@${handle ?? ""}`;
+  if (key === ensured) return;
   const stored = await chrome.storage.local.get({ account: null, accounts: {} });
   const accounts = stored.accounts as Record<string, Account>;
-  const handle = accountHandle();
   const known = Object.hasOwn(accounts, account) ? accounts[account] : undefined;
-  if (stored.account === account && known && (!handle || known.handle === handle)) return;
-  await write("useAccount", account, handle);
+  if (stored.account !== account || !known || (handle && known.handle !== handle)) {
+    await write("useAccount", account, handle);
+  }
+  ensured = key;
 }
 
 /**
- * La session a changé de compte X pendant l'appel : sa réponse vaut pour un
- * autre compte que celui dont l'état a été lu, elle est ignorée.
+ * La session est passée sur un autre compte X depuis la lecture de l'état :
+ * une requête envoyée maintenant viserait un autre compte que celui dont
+ * l'état a été lu. Vérifié juste avant chaque requête, dont la réponse est
+ * ensuite attribuée au compte lu : la session ne change pas entre la
+ * vérification et l'envoi, faits d'un même trait.
  */
-const switched = (account: string | null): boolean => account !== null && accountId() !== account;
+const switched = (state: State): boolean => accountId() !== state.account;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -85,54 +105,67 @@ async function handleGlobal(state: State, outcome: GlobalOutcome): Promise<Next>
   switch (outcome.kind) {
     case "rate_limited":
       // Stocké, pour qu'un autre onglet qui reprendrait le verrou attende aussi.
-      await setPauseUntil(outcome.until, state.prefix);
+      await setPauseUntil(state.prefix, outcome.until);
       return now();
     case "auth":
       // L'alerte reste affichée jusqu'à la reprise, voir authCleared.
-      await setError(outcome.message, "auth", Infinity, (await sessionId()) ?? undefined, state.prefix);
+      await setError(state.prefix, outcome.message, "auth", Infinity, (await sessionId()) ?? undefined);
       return STOP;
     case "network":
-      await setError(
-        `${outcome.message} Nouvel essai dans une minute.`,
-        "network",
-        NETWORK_RETRY_MS,
-        undefined,
-        state.prefix,
-      );
+      await setError(state.prefix, `${outcome.message} Nouvel essai dans une minute.`, "network", NETWORK_RETRY_MS);
       return now(NETWORK_RETRY_MS);
   }
 }
 
-/** Demande à X l'état de blocage d'un paquet de comptes, ou décide de la suite si la demande échoue. */
-async function lookup(state: State, batch: string[]): Promise<Lookup | Next> {
+/**
+ * Demande à X l'état de blocage d'un paquet de comptes, ou décide de la suite
+ * si la demande échoue : une limite, une session ou un réseau en cause valent
+ * pour tout le traitement. Un autre refus renvoie `failed`, à traiter par l'appelant.
+ */
+async function lookup(state: State, batch: string[]): Promise<Lookup | Next | { failed: string }> {
+  if (switched(state)) return now();
   const reply = await lookupBlocking(batch);
-  if (switched(state.account)) return now();
   if (!("kind" in reply)) return reply;
   if (isGlobal(reply)) return handleGlobal(state, reply);
-  // Sans vérification, on risquerait de rebloquer : on s'arrête.
-  await setError(`Vérification impossible : ${reply.message}`, "other", Infinity, undefined, state.prefix);
-  return STOP;
+  return { failed: reply.message };
 }
 
-const isNext = (value: Lookup | Next): value is Next => "stop" in value;
+/**
+ * Prochaine vérification de compte X permise à cet onglet, voir AUDIT_INTERVAL_MS.
+ * Entre deux, blocages et déblocages continuent.
+ */
+let nextAuditAt = 0;
 
 /**
  * Vérifie un paquet de comptes de la liste pour un compte X encore jamais
- * vérifié, voir State.audit. Lecture seule : rien n'est modifié côté X.
+ * vérifié, voir State.audit. Lecture seule : rien n'est modifié côté X. Un
+ * paquet refusé est abandonné sans rien changer : la vérification n'est
+ * qu'une remise à niveau, elle ne doit pas arrêter le blocage.
  */
 async function audit(state: State, batch: string[]): Promise<Next> {
+  nextAuditAt = Date.now() + AUDIT_INTERVAL_MS;
   const reply = await lookup(state, batch);
-  if (isNext(reply)) return reply;
+  if ("stop" in reply) return reply;
+  if ("failed" in reply) {
+    console.warn("[Barrage] vérification du compte X abandonnée pour un paquet :", reply.failed);
+    await write("recordAudit", batch, [], [], {}, state.account);
+    return now();
+  }
   const at = Date.now();
   for (const handle of batch) if (reply.found.has(handle) && !reply.blocking.has(handle)) checked.set(handle, at);
   await write("recordAudit", batch, [...reply.found], [...reply.blocking], recovered(state), state.account);
-  return now(jittered(DELAY_SECONDS));
+  return now();
 }
 
 /** Vérifie un paquet de comptes à bloquer : déjà bloqués, ou introuvables. */
 async function check(state: State, batch: string[]): Promise<Next> {
   const reply = await lookup(state, batch);
-  if (isNext(reply)) return reply;
+  if ("stop" in reply) return reply;
+  if ("failed" in reply) {
+    // Sans vérification, on risquerait de rebloquer : on s'arrête.
+    await setError(state.prefix, `Vérification impossible : ${reply.failed}`, "other", Infinity);
+    return STOP;
+  }
   const at = Date.now();
   // Sans prototype : « __proto__ » est un identifiant X valide.
   const entries: Results = Object.create(null);
@@ -142,7 +175,7 @@ async function check(state: State, batch: string[]): Promise<Next> {
       entries[handle] = { state: "not_found", at, message: "Compte introuvable ou suspendu." };
     } else checked.set(handle, at);
   }
-  await setResults(entries, recovered(state), state.prefix);
+  await setResults(state.prefix, entries, recovered(state));
   return now();
 }
 
@@ -152,15 +185,15 @@ function recovered(state: State): Record<string, unknown> {
 }
 
 async function block(state: State, handle: string): Promise<Next> {
+  if (switched(state)) return now();
   const outcome = await blockUser(handle);
-  if (switched(state.account)) return now();
   if (isGlobal(outcome)) return handleGlobal(state, outcome);
 
   const at = Date.now();
-  if (outcome.kind === "ok") await setResults({ [handle]: { state: "blocked", at } }, recovered(state), state.prefix);
+  if (outcome.kind === "ok") await setResults(state.prefix, { [handle]: { state: "blocked", at } }, recovered(state));
   else if (outcome.kind === "not_found") {
     const result: Result = { state: "not_found", at, message: outcome.message };
-    await setResults({ [handle]: result }, recovered(state), state.prefix);
+    await setResults(state.prefix, { [handle]: result }, recovered(state));
   } else await write("recordBlockFailure", handle, outcome.message, at, state.account);
   // Le délai entre deux blocages ne se raccourcit pas quand la liste change.
   return now(jittered(DELAY_SECONDS));
@@ -168,8 +201,8 @@ async function block(state: State, handle: string): Promise<Next> {
 
 /** Débloque un compte désactivé par l'utilisateur après que Barrage l'a bloqué. */
 async function unblock(state: State, handle: string): Promise<Next> {
+  if (switched(state)) return now();
   const outcome = await unblockUser(handle);
-  if (switched(state.account)) return now();
   if (isGlobal(outcome)) return handleGlobal(state, outcome);
 
   const at = Date.now();
@@ -189,6 +222,9 @@ async function unblock(state: State, handle: string): Promise<Next> {
  */
 async function step(): Promise<Next> {
   const account = accountId();
+  // Sans compte X connecté, rien n'est possible. La connexion recharge x.com,
+  // ce qui relance le traitement.
+  if (!account) return STOP;
   await ensureAccount(account);
   if (account !== checkedFor) {
     checked.clear();
@@ -204,13 +240,16 @@ async function step(): Promise<Next> {
   const remaining = state.pauseUntil - Date.now();
   if (remaining > 0) return now(remaining);
 
-  // L'état réel du compte X d'abord : il décide de ce qu'il reste à débloquer et à bloquer.
-  if (state.audit.length) return audit(state, state.audit.slice(0, LOOKUP_BATCH));
+  // La vérification du compte X passe en premier quand elle est due, sans
+  // retenir les blocages et déblocages entre deux paquets.
+  const auditWait = nextAuditAt - Date.now();
+  if (state.audit.length && auditWait <= 0) return audit(state, state.audit.slice(0, LOOKUP_BATCH));
   if (toUnblock) return unblock(state, toUnblock);
+  if (!toBlock) return now(auditWait);
 
   const unchecked = uncheckedPending(order, state.results, checked, Date.now(), CHECK_MAX_AGE_MS);
   if (unchecked.length) return check(state, unchecked.slice(0, LOOKUP_BATCH));
-  return block(state, toBlock as string);
+  return block(state, toBlock);
 }
 
 function hasWork(state: State): boolean {
@@ -258,11 +297,12 @@ async function start(pageLoad = false): Promise<void> {
   dirty = true;
   if (running) return;
   const account = accountId();
+  if (!account) return;
   await ensureAccount(account);
   const state = await getState(account);
   if (state.error?.reason === "auth") {
     if (!(await authCleared(state.error, pageLoad))) return;
-    await setError(null, "other", 0, undefined, state.prefix);
+    await setError(state.prefix, null);
   }
   if (!hasWork(state)) return;
   if (running) return; // un autre appel a démarré pendant la lecture

@@ -105,3 +105,9 @@ test("un compte introuvable n'est retenté qu'au bout d'un jour", () => {
   assert.equal(isPending({ state: "not_found", at: 0 }, day), true);
   assert.equal(isPending({ state: "blocked", at: 0 }, day), false);
 });
+
+test("un compte déjà bloqué attribué ensuite à Barrage n'est pas « vient d'être bloqué »", () => {
+  const before: Results = { a: { state: "already_blocked", at: 1 }, b: { state: "failed", at: 1 } };
+  const after: Results = { a: { state: "blocked", at: 1 }, b: { state: "blocked", at: 2 } };
+  assert.deepEqual(newlyBlocked(before, after), ["b"]);
+});

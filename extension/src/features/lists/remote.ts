@@ -2,7 +2,6 @@
 // Fonctions pures, testées dans tests/lists.test.ts.
 import { LIST_MAX_REMOVED_SHARE, LIST_MAX_SIZE } from "../../core/config.ts";
 import { parseHandle } from "../accounts/handles.ts";
-import { resultOf, type Results } from "../blocking/queue.ts";
 
 export type Parsed = { ok: true; handles: string[] } | { ok: false; reason: string };
 
@@ -21,27 +20,18 @@ export function parseList(body: unknown): Parsed {
   return { ok: true, handles };
 }
 
-export type Update =
-  | { ok: true; removed: string[]; retire: string[] }
-  | { ok: false; reason: string };
+export type Update = { ok: true; removed: string[] } | { ok: false; reason: string };
 
 /**
  * Compare la liste en place à la nouvelle. `removed` : comptes qui en sortent,
- * sauf ceux que l'utilisateur a ajoutés lui-même. `retire` : parmi eux, ceux
- * que Barrage a bloqués, à débloquer. Un compte que l'utilisateur bloquait
- * avant Barrage n'est jamais débloqué.
+ * sauf ceux que l'utilisateur a ajoutés lui-même. Ceux que Barrage a bloqués
+ * sont à débloquer, voir blockedByBarrage.
  */
-export function compareLists(
-  current: readonly string[],
-  next: readonly string[],
-  added: readonly string[],
-  results: Results,
-): Update {
+export function compareLists(current: readonly string[], next: readonly string[], added: readonly string[]): Update {
   const kept = new Set([...next, ...added]);
   const removed = current.filter((h) => !kept.has(h));
   if (current.length && removed.length / current.length > LIST_MAX_REMOVED_SHARE) {
     return { ok: false, reason: `${removed.length} comptes retirés d'un coup sur ${current.length}` };
   }
-  const retire = removed.filter((h) => resultOf(results, h)?.state === "blocked");
-  return { ok: true, removed, retire };
+  return { ok: true, removed };
 }

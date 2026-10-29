@@ -44,6 +44,14 @@ export const RUNNER_GRACE_MS = 2 * 60_000;
 /** Comptes vérifiés par requête auprès de X, le maximum qu'accepte l'API. */
 export const LOOKUP_BATCH = 100;
 
+/**
+ * Délai entre deux paquets de la vérification d'un compte X (voir
+ * State.audit). X limite cette requête à une quinzaine par quart d'heure :
+ * un peu moins d'une par minute laisse de la marge aux vérifications faites
+ * avant un blocage.
+ */
+export const AUDIT_INTERVAL_MS = 70_000;
+
 // Liste partagée, publiée sur GitHub (dossier lists/ du dépôt, un fichier par réseau).
 
 /**

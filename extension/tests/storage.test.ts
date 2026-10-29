@@ -4,7 +4,13 @@ import { DEFAULT_HANDLES } from "../src/features/accounts/defaults.ts";
 import { parseHandle } from "../src/features/accounts/handles.ts";
 import { active, getState, resultChanges, resultHandle, resultKey, unblockQueue } from "../src/core/state.ts";
 import { addHandles, requestBlock, requestUnblock, setEnabled } from "../src/features/accounts/store.ts";
-import { finishUnblock, markAlreadyBlocked, recordAudit, useAccount } from "../src/features/blocking/store.ts";
+import {
+  finishUnblock,
+  markAlreadyBlocked,
+  recordAudit,
+  repairInheritedBlocks,
+  useAccount,
+} from "../src/features/blocking/store.ts";
 import { setNotify } from "../src/features/notifications/store.ts";
 import { addSeen } from "../src/features/timeline/store.ts";
 
@@ -310,4 +316,66 @@ test("les changements de résultats se lisent pour un seul compte X", () => {
   };
   assert.deepEqual(Object.keys(resultChanges(changes).after), ["a"]);
   assert.deepEqual(Object.keys(resultChanges(changes, "acct:2/").after), ["b"]);
+});
+
+test("sur un autre compte X, un blocage que l'état commun attribuait à Barrage lui revient", async () => {
+  store.remote = ["a", "b"];
+  await useAccount("1", null);
+  putResults({ a: { state: "blocked", at: 1 } });
+  await useAccount("2", null);
+  await recordAudit(["a", "b"], ["a", "b"], ["a", "b"], {}, "2");
+  const second = await getState("2");
+  assert.equal(second.results.a?.state, "blocked");
+  // Inconnu de l'état commun : l'utilisateur l'a bloqué lui-même, Off ne le débloquera pas.
+  assert.equal(second.results.b?.state, "already_blocked");
+});
+
+test("la réparation rend à Barrage les blocages hérités marqués « avant Barrage » par la 1.1.0", async () => {
+  store.remote = ["a", "b"];
+  await useAccount("1", null);
+  putResults({ a: { state: "blocked", at: 1 } });
+  await useAccount("2", null);
+  store[resultKey("a", "acct:2/")] = { state: "already_blocked", at: 5 };
+  store[resultKey("b", "acct:2/")] = { state: "already_blocked", at: 5 };
+  await repairInheritedBlocks();
+  const second = await getState("2");
+  assert.deepEqual(second.results.a, { state: "blocked", at: 5 });
+  assert.equal(second.results.b?.state, "already_blocked");
+  // Le premier compte n'est pas touché.
+  assert.equal((await getState("1")).results.a?.state, "blocked");
+});
+
+test("réactiver un compte annule son déblocage en attente sur chaque compte X", async () => {
+  await useAccount("1", null);
+  await useAccount("2", null);
+  store.disabled = ["a"];
+  store.unblock = ["a", "b"];
+  store["acct:2/unblock"] = ["a"];
+  await setEnabled("a", true);
+  assert.deepEqual(store.disabled, []);
+  assert.deepEqual(store.unblock, ["b"]);
+  assert.deepEqual(store["acct:2/unblock"], []);
+});
+
+test("ce qu'écrit le premier compte avant d'être enregistré lui reste", async () => {
+  store.remote = ["a"];
+  await addSeen(["a"], "1");
+  await useAccount("1", null);
+  assert.deepEqual((await getState("1")).seen, ["a"]);
+});
+
+test("un nouveau compte X est enregistré et à vérifier en une seule écriture", async () => {
+  store.remote = ["a", "b"];
+  await useAccount("1", null);
+  let writes = 0;
+  const set = (globalThis as any).chrome.storage.local.set;
+  (globalThis as any).chrome.storage.local.set = async (values: Record<string, unknown>) => {
+    writes++;
+    await set(values);
+  };
+  await useAccount("2", "deux");
+  assert.equal(writes, 1);
+  const second = await getState("2");
+  assert.deepEqual(second.audit, ["a", "b"]);
+  assert.deepEqual(second.accounts["2"], { handle: "deux" });
 });

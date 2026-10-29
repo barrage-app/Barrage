@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { LIST_MAX_SIZE } from "../src/core/config.ts";
+import { blockedByBarrage } from "../src/features/blocking/queue.ts";
 import { compareLists, parseList } from "../src/features/lists/remote.ts";
 
 test("une liste valide est normalisée et dédoublonnée", () => {
@@ -25,15 +26,15 @@ test("seuls les comptes retirés que Barrage a bloqués sont à débloquer", () 
     a: { state: "blocked" as const, at: 1 },
     b: { state: "already_blocked" as const, at: 1 },
   };
-  const update = compareLists(["a", "b", "c", "d", "e"], ["c", "d", "e"], [], results);
-  assert.deepEqual(update, { ok: true, removed: ["a", "b"], retire: ["a"] });
+  const update = compareLists(["a", "b", "c", "d", "e"], ["c", "d", "e"], []);
+  assert.deepEqual(update, { ok: true, removed: ["a", "b"] });
+  assert.deepEqual(blockedByBarrage(["a", "b"], results), ["a"]);
 });
 
 test("un compte ajouté par l'utilisateur n'est jamais retiré", () => {
-  const results = { a: { state: "blocked" as const, at: 1 } };
-  assert.deepEqual(compareLists(["a", "b", "c"], ["b", "c"], ["a"], results), { ok: true, removed: [], retire: [] });
+  assert.deepEqual(compareLists(["a", "b", "c"], ["b", "c"], ["a"]), { ok: true, removed: [] });
 });
 
 test("une liste qui retire plus de la moitié des comptes d'un coup est ignorée", () => {
-  assert.equal(compareLists(["a", "b", "c", "d"], ["a"], [], {}).ok, false);
+  assert.equal(compareLists(["a", "b", "c", "d"], ["a"], []).ok, false);
 });

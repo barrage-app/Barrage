@@ -42,9 +42,21 @@ export function accountHandle(): string | null {
  * compte sur x.com change le cookie twid (« u=123… ») de tous les onglets.
  */
 export function accountId(): string | null {
-  const twid = cookie("twid");
-  if (!twid) return null;
-  return /^u=(\d+)$/.exec(decodeURIComponent(twid))?.[1] ?? null;
+  // Valeur encodée ou non, entre guillemets ou non : « u%3D123 », « "u=123" ».
+  return /^"?u(?:=|%3D)(\d+)"?$/i.exec(cookie("twid") ?? "")?.[1] ?? null;
+}
+
+let loadedAccount: string | null | undefined;
+
+/**
+ * Compte X connecté au chargement de la page, lu au premier appel : le
+ * traitement et le fil le demandent dès leur démarrage. Ce que la page affiche
+ * (fil, barre latérale) vaut pour lui, même si la session passe ensuite sur
+ * un autre compte.
+ */
+export function pageAccount(): string | null {
+  if (loadedAccount === undefined) loadedAccount = accountId();
+  return loadedAccount;
 }
 
 /** Bouton de compte de la barre latérale : « Nom @identifiant ». */

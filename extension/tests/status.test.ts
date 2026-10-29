@@ -14,14 +14,13 @@ test("un compte débloqué redevient « Visible »", () => {
   assert.equal(describe({ state: "unblocked", at: 1 }, false).label, "Visible");
 });
 
-test("un compte bloqué n'offre que « Débloquer », et précise s'il l'était avant Barrage", () => {
+test("un compte bloqué n'offre que « Débloquer », sans préciser par qui", () => {
   const byUs = describe({ state: "blocked", at: 1 }, false);
   const before = describe({ state: "already_blocked", at: 1 }, false);
+  assert.deepEqual(before, byUs);
   assert.equal(byUs.label, "Bloqué");
   assert.equal(byUs.note, undefined);
-  assert.equal(before.note, "avant Barrage");
   assert.equal(byUs.action, "unblock");
-  assert.equal(before.action, "unblock");
 });
 
 test("un compte en file n'a pas de bouton", () => {
