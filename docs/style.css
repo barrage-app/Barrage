@@ -319,6 +319,9 @@ p { margin: 0; }
   overflow: hidden;
 }
 
+/* Capture d'écran dans une étape */
+.step__shot { width: 100%; max-width: 423px; height: auto; border-radius: 12px; }
+
 /* Maquettes de navigateur */
 
 .mock {
