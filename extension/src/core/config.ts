@@ -51,7 +51,7 @@ export const LOOKUP_BATCH = 100;
  * "https://raw.githubusercontent.com/<compte>/<dépôt>/main/lists". Vide : pas de
  * téléchargement, seule la liste intégrée à l'extension sert.
  */
-export const LISTS_URL = "";
+export const LISTS_URL = "https://raw.githubusercontent.com/barrage-app/Barrage/main/lists";
 /** Intervalle entre deux téléchargements. */
 export const LISTS_REFRESH_MINUTES = 6 * 60;
 /** Au-delà, une liste reçue est jugée anormale et ignorée. */
