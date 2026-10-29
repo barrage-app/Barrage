@@ -78,7 +78,7 @@
             <tbody>
               <tr><th scope="row">Ne jamais leur répondre, ne pas les citer, ne pas les retweeter, même pour critiquer</th><td>Une réponse ou une citation a un poids de 5, contre 0,66 pour un like. Rien dans le code de classement ne distingue l'accord du désaccord : une réponse critique les fait monter.</td></tr>
               <tr><th scope="row">Cliquer sur « pas intéressé »</th><td>Un signal volontaire et clair, pris en compte dans le score, et dans le second tri de la page quand il est activé.</td></tr>
-              <tr><th scope="row">Bloquer plutôt que masquer</th><td>Dans les deux cas, le compte disparaît de votre fil et votre geste apprend au modèle que les gens comme vous n'aiment pas ce contenu. Mais le blocage fait plus : il cache aussi les reposts de ses posts, et il compte quand X note ses réponses (voir ci-dessous).</td></tr>
+              <tr><th scope="row">Bloquer plutôt que masquer</th><td>Dans les deux cas, le compte disparaît de votre fil et votre geste apprend au modèle que les gens comme vous n'aiment pas ce contenu. Mais le blocage fait plus : il cache aussi les reposts et citations de ses posts, et il compte quand X note ses réponses (voir ci-dessous).</td></tr>
               <tr><th scope="row">Signaler seulement les vraies infractions</th><td>C'est le signal qui pèse le plus sur la réputation d'un compte. Certains classifieurs qui peuvent suspendre un compte semblent, d'après leur nom, s'appuyer sur les signalements. Une partie des calculs ne retient que les signalements jugés légitimes.</td></tr>
             </tbody>
           </table>
@@ -88,8 +88,8 @@
         <p>En revanche, le blocage a deux effets que le masquage n'a pas :</p>
         <ol class="facts">
           <li>
-            <h3>Il cache aussi les reposts de ses posts</h3>
-            <p>Quand quelqu'un d'autre reposte ou cite un post d'un compte que vous bloquez, ce repost ou cette citation est aussi retiré de votre fil (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/filters/author_socialgraph_filter.rs#L10-L53" target="_blank" rel="noopener">filtre de X</a>). Pour un compte masqué, ce filtre ne retire que ses propres posts. D'autres règles de X peuvent cacher les citations de ses posts si vous ne le suivez pas (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/author_rules.rs#L67-L72" target="_blank" rel="noopener">règle des citations</a>), mais nous n'avons trouvé aucune règle équivalente pour les reposts.</p>
+            <h3>Il cache aussi les reposts et citations de ses posts</h3>
+            <p>Quand quelqu'un d'autre reposte ou cite un post d'un compte que vous bloquez, ce repost ou cette citation est aussi retiré de votre fil (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/filters/author_socialgraph_filter.rs#L10-L53" target="_blank" rel="noopener">filtre de X</a>). Pour un compte masqué, ce filtre ne retire que ses propres posts : les reposts et citations de ses posts par d'autres restent visibles. Une règle qui cacherait ces citations existe bien dans le code (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/author_rules.rs#L67-L72" target="_blank" rel="noopener">règle des citations</a>), mais elle est désactivée par défaut : elle ne fait que mesurer ce qu'elle aurait caché (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/config.rs#L103-L113" target="_blank" rel="noopener">config.rs</a>).</p>
           </li>
           <li>
             <h3>Les blocages reçus comptent dans la notation de ses réponses</h3>
