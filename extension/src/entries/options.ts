@@ -10,12 +10,14 @@ import { getState, onStateChange } from "../core/state.ts";
 import { mountAccounts } from "../features/accounts/section.ts";
 import { mountConnection } from "../features/blocking/connection.ts";
 import { mountNotifications } from "../features/notifications/settings.ts";
+import { mountUpdateBanner } from "../features/updates/banner.ts";
 import type { View } from "../ui/dom.ts";
 
 const section = (id: string) => document.getElementById(id) as HTMLElement;
 
 mountConnection(section("connection"));
 const views: View[] = [
+  mountUpdateBanner(section("update")),
   mountNotifications(section("notifications")),
   mountAccounts(section("accounts")),
 ];

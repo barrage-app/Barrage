@@ -1,0 +1,14 @@
+/* Bandeau des options : une version plus récente de Barrage est publiée. */
+.update-banner {
+  display: flex; gap: 12px; align-items: center; margin: 28px 0 0; padding: 16px 18px;
+  border: 1px solid var(--amber); border-radius: var(--radius); background: var(--amber-soft);
+}
+.update-banner[hidden] { display: none; }
+.update-banner svg { width: 20px; height: 20px; flex: none; color: var(--amber-text); }
+.update-body { flex: 1; display: grid; gap: 2px; }
+.update-body strong { color: var(--amber-text); font-size: 16px; }
+.update-banner a { color: var(--blue); font-weight: 700; white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .update-banner { flex-wrap: wrap; }
+}

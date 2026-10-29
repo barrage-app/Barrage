@@ -61,3 +61,12 @@ export const LIST_MAX_SIZE = 5000;
  * ignorée : un fichier vidé par erreur ou piraté ne débloque pas tout le monde.
  */
 export const LIST_MAX_REMOVED_SHARE = 0.5;
+
+// Mises à jour : Barrage est chargé en mode développeur, sans mise à jour
+// automatique. La dernière version publiée sur GitHub est relevée en même
+// temps que la liste partagée, pour signaler qu'il faut mettre à jour.
+
+/** Dernière version publiée de l'extension. Vide : pas de vérification. */
+export const RELEASES_URL = "https://api.github.com/repos/barrage-app/Barrage/releases/latest";
+/** Guide de mise à jour, lien du bandeau des options. */
+export const UPDATE_GUIDE_URL = "https://barrage-app.github.io/Barrage/#mise-a-jour";

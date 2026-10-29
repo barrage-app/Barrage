@@ -2,13 +2,15 @@
 // 6 heures et à chaque ouverture des options, et compare la liste intégrée à
 // chaque mise à jour de l'extension. Un compte retiré de la liste que Barrage
 // avait bloqué est mis en file de déblocage, pour chaque compte X où il
-// l'avait bloqué ; l'onglet x.com qui traite la file s'en charge.
+// l'avait bloqué ; l'onglet x.com qui traite la file s'en charge. La dernière
+// version publiée de l'extension est relevée en même temps.
 import { LISTS_REFRESH_MINUTES, LISTS_URL } from "../../core/config.ts";
 import { isRefreshListsRequest } from "../../core/messages.ts";
 import { getState, scoped, strings, type State } from "../../core/state.ts";
 import { DEFAULT_HANDLES } from "../accounts/defaults.ts";
 import { compareLists, parseList } from "./remote.ts";
 import { serial } from "../../core/writer.ts";
+import { checkLatestVersion } from "../updates/check.ts";
 
 const ALARM = "barrage-lists";
 /** Liste intégrée à la version précédente de l'extension. */
@@ -91,18 +93,21 @@ async function refreshList(): Promise<void> {
   });
 }
 
+/** Liste partagée et dernière version de l'extension, relevées ensemble. */
+const refresh = () => Promise.all([refreshList(), checkLatestVersion()]);
+
 export function syncLists(): void {
   chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === ALARM) void refreshList();
+    if (alarm.name === ALARM) void refresh();
   });
   chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse: (reply: boolean) => void) => {
     if (!isRefreshListsRequest(message)) return false;
-    void refreshList().finally(() => sendResponse(true));
+    void refresh().finally(() => sendResponse(true));
     return true; // réponse asynchrone
   });
   const schedule = () => {
     void chrome.alarms.create(ALARM, { periodInMinutes: LISTS_REFRESH_MINUTES });
-    void refreshList();
+    void refresh();
   };
   chrome.runtime.onInstalled.addListener(() => void serial(syncBundled).finally(schedule));
   chrome.runtime.onStartup.addListener(schedule);

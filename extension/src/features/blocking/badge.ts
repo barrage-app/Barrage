@@ -1,21 +1,32 @@
-// Nombre de comptes en attente de blocage, affiché sur l'icône de l'extension.
+// Pastille de l'icône de l'extension : « ! » rouge quand une mise à jour est
+// disponible, sinon le nombre de comptes en attente de blocage.
 import { QUEUE_KEYS, getState, onStateChange, queueOrder } from "../../core/state.ts";
+import { updateAvailable } from "../updates/version.ts";
 import { pendingIn } from "./queue.ts";
 
-async function refreshBadge(): Promise<void> {
-  // Seuls les comptes vus dans le fil ou demandés à la main sont en file.
-  const state = await getState();
-  const pending = pendingIn(queueOrder(state), state.results).length;
-  await chrome.action.setBadgeText({ text: pending > 999 ? "999+" : pending ? String(pending) : "" });
-}
+const BLUE = "#1d9bf0";
+const RED = "#f4212e";
+const TITLE = "Barrage : liste et suivi";
 
-function setup(): void {
-  void chrome.action.setBadgeBackgroundColor({ color: "#1d9bf0" });
-  void refreshBadge();
+async function refreshBadge(): Promise<void> {
+  const state = await getState();
+  if (updateAvailable(state.latestVersion)) {
+    await chrome.action.setBadgeBackgroundColor({ color: RED });
+    await chrome.action.setBadgeText({ text: "!" });
+    await chrome.action.setTitle({ title: `${TITLE} (mise à jour disponible)` });
+    return;
+  }
+  // Seuls les comptes vus dans le fil ou demandés à la main sont en file.
+  const pending = pendingIn(queueOrder(state), state.results).length;
+  await chrome.action.setBadgeBackgroundColor({ color: BLUE });
+  await chrome.action.setBadgeText({ text: pending > 999 ? "999+" : pending ? String(pending) : "" });
+  await chrome.action.setTitle({ title: TITLE });
 }
 
 export function watchBadge(): void {
-  onStateChange(() => void refreshBadge(), QUEUE_KEYS);
-  chrome.runtime.onInstalled.addListener(setup);
-  chrome.runtime.onStartup.addListener(setup);
+  // La version publiée ne fait pas partie de la file : écoutée à part, pour ne
+  // pas réveiller le traitement des onglets x.com.
+  onStateChange(() => void refreshBadge(), [...QUEUE_KEYS, "latestVersion"]);
+  chrome.runtime.onInstalled.addListener(() => void refreshBadge());
+  chrome.runtime.onStartup.addListener(() => void refreshBadge());
 }

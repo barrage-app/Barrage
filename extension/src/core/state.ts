@@ -71,6 +71,8 @@ export type State = {
    * état de blocage réel remplace celui que Barrage supposait.
    */
   audit: string[];
+  /** Dernière version publiée de l'extension, voir features/updates. */
+  latestVersion: string | null;
 };
 
 // En stockage, `handles` ne contient que les comptes ajoutés par l'utilisateur.
@@ -224,6 +226,7 @@ export async function getState(account?: string | null): Promise<State> {
     pauseUntil: typeof pauseUntil === "number" ? pauseUntil : 0,
     error: isRecord(error) ? (error as BlockingError) : null,
     audit: strings(own("audit")),
+    latestVersion: typeof stored.latestVersion === "string" ? stored.latestVersion : null,
   };
 }
 
