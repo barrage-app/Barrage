@@ -18,5 +18,12 @@ export function isWriteRequest(message: unknown): message is WriteRequest {
   return typeof m === "object" && m !== null && m.type === WRITE && typeof m.name === "string" && Array.isArray(m.args);
 }
 
+/** Options → service worker : retélécharger la liste partagée sans attendre l'alarme. */
+export const REFRESH_LISTS = "barrage/refresh-lists";
+
+export function isRefreshListsRequest(message: unknown): boolean {
+  return typeof message === "object" && message !== null && (message as { type?: unknown }).type === REFRESH_LISTS;
+}
+
 /** Réponse d'un content script aux pings des options : y répondre prouve qu'il est vivant. */
 export type PingReply = { session: boolean };

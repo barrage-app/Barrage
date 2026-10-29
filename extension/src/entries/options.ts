@@ -5,6 +5,7 @@ import "../ui/theme.css";
 import "../ui/components.css";
 import "../ui/header.css";
 import "../ui/footer.css";
+import { REFRESH_LISTS } from "../core/messages.ts";
 import { getState, onStateChange } from "../core/state.ts";
 import { mountAccounts } from "../features/accounts/section.ts";
 import { mountConnection } from "../features/blocking/connection.ts";
@@ -38,3 +39,6 @@ async function refresh(): Promise<void> {
 
 onStateChange(() => void refresh());
 void refresh();
+// La liste partagée est revérifiée à chaque ouverture des options ; un
+// changement arrive par onStateChange.
+void chrome.runtime.sendMessage({ type: REFRESH_LISTS }).catch(() => {});

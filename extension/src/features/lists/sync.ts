@@ -1,8 +1,10 @@
-// Service worker : télécharge la liste partagée de X au démarrage puis toutes
-// les 6 heures, et compare la liste intégrée à chaque mise à jour de
-// l'extension. Un compte retiré de la liste que Barrage avait bloqué est mis
-// en file de déblocage ; l'onglet x.com qui traite la file s'en charge.
+// Service worker : télécharge la liste partagée de X au démarrage, toutes les
+// 6 heures et à chaque ouverture des options, et compare la liste intégrée à
+// chaque mise à jour de l'extension. Un compte retiré de la liste que Barrage
+// avait bloqué est mis en file de déblocage ; l'onglet x.com qui traite la
+// file s'en charge.
 import { LISTS_REFRESH_MINUTES, LISTS_URL } from "../../core/config.ts";
+import { isRefreshListsRequest } from "../../core/messages.ts";
 import { getState, strings, type State } from "../../core/state.ts";
 import { DEFAULT_HANDLES } from "../accounts/defaults.ts";
 import { compareLists, parseList } from "./remote.ts";
@@ -80,6 +82,11 @@ async function refreshList(): Promise<void> {
 export function syncLists(): void {
   chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === ALARM) void refreshList();
+  });
+  chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse: (reply: boolean) => void) => {
+    if (!isRefreshListsRequest(message)) return false;
+    void refreshList().finally(() => sendResponse(true));
+    return true; // réponse asynchrone
   });
   const schedule = () => {
     void chrome.alarms.create(ALARM, { periodInMinutes: LISTS_REFRESH_MINUTES });
