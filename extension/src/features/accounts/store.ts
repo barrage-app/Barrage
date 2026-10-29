@@ -1,6 +1,8 @@
 // Écritures de la liste de comptes : ajout, interrupteur « Blocage
-// automatique », blocage et déblocage demandés à la main.
-import { getState, resultKey } from "../../core/state.ts";
+// automatique », blocage et déblocage demandés à la main. La liste et les
+// interrupteurs valent pour tous les comptes X ; un blocage ou un déblocage
+// demandé à la main vise le compte X affiché, le dernier connecté sur x.com.
+import { getState, resultKey, scoped } from "../../core/state.ts";
 import { resultOf } from "../blocking/queue.ts";
 
 export type AddResult = { added: string[]; existing: string[] };
@@ -27,11 +29,11 @@ export async function addHandles(handles: readonly string[]): Promise<AddResult>
  * passé ou un « introuvable » (compte peut-être rétabli depuis) est oublié.
  */
 export async function requestBlock(handle: string): Promise<void> {
-  const { results, seen } = await getState();
+  const { results, seen, prefix } = await getState();
   const previous = resultOf(results, handle);
   if (previous && !["failed", "unblocked", "not_found"].includes(previous.state)) return;
-  if (previous) await chrome.storage.local.remove(resultKey(handle));
-  await chrome.storage.local.set({ seen: [handle, ...seen.filter((h) => h !== handle)] });
+  if (previous) await chrome.storage.local.remove(resultKey(handle, prefix));
+  await chrome.storage.local.set(scoped(prefix, { seen: [handle, ...seen.filter((h) => h !== handle)] }));
 }
 
 /**
@@ -40,12 +42,14 @@ export async function requestBlock(handle: string): Promise<void> {
  * aussi un compte bloqué avant Barrage, ou dont le déblocage a été refusé.
  */
 async function disable(handle: string, forceUnblock: boolean): Promise<void> {
-  const { disabled, unblock, seen } = await getState();
-  await chrome.storage.local.set({
-    disabled: [...new Set([...disabled, handle])],
-    ...(forceUnblock ? { unblock: [...new Set([...unblock, handle])] } : {}),
-    seen: seen.filter((h) => h !== handle),
-  });
+  const { disabled, unblock, seen, prefix } = await getState();
+  await chrome.storage.local.set(
+    scoped(prefix, {
+      disabled: [...new Set([...disabled, handle])],
+      ...(forceUnblock ? { unblock: [...new Set([...unblock, handle])] } : {}),
+      seen: seen.filter((h) => h !== handle),
+    }),
+  );
 }
 
 /**
@@ -62,9 +66,11 @@ export const requestUnblock = (handle: string): Promise<void> => disable(handle,
  */
 export async function setEnabled(handle: string, enabled: boolean): Promise<void> {
   if (!enabled) return disable(handle, false);
-  const { disabled, unblock } = await getState();
-  await chrome.storage.local.set({
-    disabled: disabled.filter((h) => h !== handle),
-    unblock: unblock.filter((h) => h !== handle),
-  });
+  const { disabled, unblock, prefix } = await getState();
+  await chrome.storage.local.set(
+    scoped(prefix, {
+      disabled: disabled.filter((h) => h !== handle),
+      unblock: unblock.filter((h) => h !== handle),
+    }),
+  );
 }

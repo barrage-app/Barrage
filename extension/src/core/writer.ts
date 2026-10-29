@@ -4,7 +4,14 @@
 // écritures simultanées liraient le même état et la seconde effacerait la
 // première.
 import { addHandles, requestBlock, requestUnblock, setEnabled } from "../features/accounts/store.ts";
-import { finishUnblock, markAlreadyBlocked, recordBlockFailure, refuseUnblock } from "../features/blocking/store.ts";
+import {
+  finishUnblock,
+  markAlreadyBlocked,
+  recordAudit,
+  recordBlockFailure,
+  refuseUnblock,
+  useAccount,
+} from "../features/blocking/store.ts";
 import { addSeen } from "../features/timeline/store.ts";
 import { isWriteRequest, type WriteReply } from "./messages.ts";
 
@@ -13,11 +20,13 @@ const WRITES = {
   addSeen,
   finishUnblock,
   markAlreadyBlocked,
+  recordAudit,
   recordBlockFailure,
   refuseUnblock,
   requestBlock,
   requestUnblock,
   setEnabled,
+  useAccount,
 };
 
 export type Writes = typeof WRITES;

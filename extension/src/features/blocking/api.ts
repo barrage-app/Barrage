@@ -1,5 +1,6 @@
 // Appels à l'API interne de X, celle qu'utilise le site lui-même.
 // C'est le point qui casse si X change son API : un seul fichier à relire.
+import { handleFromUserNameText } from "../timeline/authors.ts";
 import { classify, noUserMatch, readLookup, type Lookup, type Outcome } from "./outcome.ts";
 
 /**
@@ -28,8 +29,26 @@ const readCsrfToken = (): string | null => cookie("ct0");
  * que pour un compte connecté.
  */
 export function signedIn(): boolean {
-  return cookie("twid") !== null || document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]') !== null;
+  return cookie("twid") !== null || document.querySelector(ACCOUNT_BUTTON_SELECTOR) !== null;
 }
+
+/** Identifiant @ du compte connecté, affiché dans les options, ou null tant que la barre latérale n'est pas là. */
+export function accountHandle(): string | null {
+  return handleFromUserNameText(document.querySelector(ACCOUNT_BUTTON_SELECTOR)?.textContent ?? "");
+}
+
+/**
+ * Identifiant numérique du compte X connecté, lu à chaque appel : changer de
+ * compte sur x.com change le cookie twid (« u=123… ») de tous les onglets.
+ */
+export function accountId(): string | null {
+  const twid = cookie("twid");
+  if (!twid) return null;
+  return /^u=(\d+)$/.exec(decodeURIComponent(twid))?.[1] ?? null;
+}
+
+/** Bouton de compte de la barre latérale : « Nom @identifiant ». */
+const ACCOUNT_BUTTON_SELECTOR = '[data-testid="SideNav_AccountSwitcher_Button"]';
 
 /**
  * Empreinte de la session X, ou null sans session. Le jeton lui-même n'est

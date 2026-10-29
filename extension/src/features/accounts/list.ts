@@ -1,7 +1,7 @@
 // Liste des comptes d'un réseau pris en charge : alerte de fond, progression,
 // recherche, filtres par état et tableau.
-import { unblockQueue } from "../../core/state.ts";
-import { fromTemplate, part, type View } from "../../ui/dom.ts";
+import { unblockQueue, type State } from "../../core/state.ts";
+import { element, fromTemplate, part, type View } from "../../ui/dom.ts";
 import { resultOf } from "../blocking/queue.ts";
 import type { Network } from "../networks/networks.ts";
 import { renderAlert } from "./alert.ts";
@@ -12,10 +12,21 @@ import { accountRow } from "./row.ts";
 import { countCategories, describe, describeDisabled } from "./status.ts";
 import template from "./list.html";
 
+/**
+ * Compte X dont les états sont affichés : chaque compte a ses propres
+ * blocages, la liste affiche ceux du dernier connecté sur x.com.
+ */
+function renderAccount(root: HTMLElement, state: State): void {
+  const handle = state.account ? state.accounts[state.account]?.handle : undefined;
+  root.replaceChildren(...(handle ? ["sur ", element("strong", { textContent: `@${handle}` })] : []));
+  root.title = handle ? `États du compte X connecté sur x.com : @${handle}.` : "";
+}
+
 export function mountAccountList(container: HTMLElement, network: Network): View {
   container.append(fromTemplate(template));
   const alert = part(container, "alert");
   const progress = part(container, "progress");
+  const account = part(container, "account");
   const rows = part(container, "rows");
   const filter = createFilter(rows, part(container, "no-match"));
   const chips = mountChips(part(container, "chips"), (category) => filter.setCategory(category));
@@ -41,6 +52,7 @@ export function mountAccountList(container: HTMLElement, network: Network): View
   return {
     render(state) {
       renderAlert(alert, state);
+      renderAccount(account, state);
 
       const queued = new Set(state.seen);
       const disabled = new Set(state.disabled);

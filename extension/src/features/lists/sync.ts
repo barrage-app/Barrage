@@ -1,11 +1,11 @@
 // Service worker : télécharge la liste partagée de X au démarrage, toutes les
 // 6 heures et à chaque ouverture des options, et compare la liste intégrée à
 // chaque mise à jour de l'extension. Un compte retiré de la liste que Barrage
-// avait bloqué est mis en file de déblocage ; l'onglet x.com qui traite la
-// file s'en charge.
+// avait bloqué est mis en file de déblocage, pour chaque compte X où il
+// l'avait bloqué ; l'onglet x.com qui traite la file s'en charge.
 import { LISTS_REFRESH_MINUTES, LISTS_URL } from "../../core/config.ts";
 import { isRefreshListsRequest } from "../../core/messages.ts";
-import { getState, strings, type State } from "../../core/state.ts";
+import { getState, scoped, strings, type State } from "../../core/state.ts";
 import { DEFAULT_HANDLES } from "../accounts/defaults.ts";
 import { compareLists, parseList } from "./remote.ts";
 import { serial } from "../../core/writer.ts";
@@ -31,14 +31,26 @@ async function replaceList(
     return false;
   }
   const removed = new Set(update.removed);
-  // Un déblocage demandé à la main reste dû, voir unblockQueue.
-  await chrome.storage.local.set({
+  // Chaque compte X a ses propres blocages : ceux à débloquer se comptent pour chacun.
+  const accounts = Object.keys(state.accounts);
+  const values: Record<string, unknown> = {
     ...extra,
-    retired: [...new Set([...state.retired, ...update.retire])],
-    // Un compte sorti de la liste quitte aussi la file prioritaire et les réglages qui le visaient.
-    seen: state.seen.filter((h) => !removed.has(h)),
+    // Un compte sorti de la liste quitte aussi les réglages qui le visaient.
     disabled: state.disabled.filter((h) => !removed.has(h)),
-  });
+  };
+  for (const account of accounts.length ? accounts : [null]) {
+    const own = await getState(account);
+    const { retire } = compareLists(current, next, own.added, own.results) as typeof update;
+    Object.assign(
+      values,
+      scoped(own.prefix, {
+        // Un déblocage demandé à la main reste dû, voir unblockQueue.
+        retired: [...new Set([...own.retired, ...retire])],
+        seen: own.seen.filter((h) => !removed.has(h)),
+      }),
+    );
+  }
+  await chrome.storage.local.set(values);
   return true;
 }
 

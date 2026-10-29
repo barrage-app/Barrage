@@ -1,9 +1,10 @@
 // Notifications « @user vient d'être bloqué » et « @user a été débloqué » sur x.com. Chaque onglet X
 // surveille les résultats : le blocage a pu être fait par un autre onglet, et
 // c'est dans celui que l'utilisateur regarde que la notification doit paraître.
-import { onStateChange, resultChanges } from "../../core/state.ts";
+import { onStateChange, prefixFor, resultChanges, type StateChanges } from "../../core/state.ts";
 import { element } from "../../ui/dom.ts";
 import { write } from "../../core/write.ts";
+import { accountId } from "../blocking/api.ts";
 import { newlyBlocked, newlyUnblocked } from "../blocking/queue.ts";
 import "./toast.css";
 
@@ -85,21 +86,25 @@ function showToast(handle: string, message: string, undo?: () => void): void {
   });
 }
 
+/** Seuls les blocages du compte X connecté sont annoncés. */
+async function announce(changes: StateChanges): Promise<void> {
+  const { before, after } = resultChanges(changes, await prefixFor(accountId()));
+  const blocked = newlyBlocked(before, after);
+  const unblocked = newlyUnblocked(before, after);
+  if (!blocked.length && !unblocked.length) return;
+  const { notify } = await chrome.storage.local.get({ notify: true });
+  if (notify === false) return;
+  // « Annuler » coupe le blocage automatique du compte, ce qui le débloque.
+  for (const handle of blocked) {
+    showToast(handle, " vient d'être bloqué ! ✊", () => void write("setEnabled", handle, false));
+  }
+  for (const handle of unblocked) showToast(handle, " a été débloqué");
+}
+
 export function watchBlocks(): void {
   onStateChange((changes) => {
-    const { before, after } = resultChanges(changes);
-    const blocked = newlyBlocked(before, after);
-    const unblocked = newlyUnblocked(before, after);
-    if (!blocked.length && !unblocked.length) return;
     // Inutile de dessiner dans un onglet que personne ne regarde.
     if (document.visibilityState !== "visible") return;
-    void chrome.storage.local.get({ notify: true }).then(({ notify }) => {
-      if (notify === false) return;
-      // « Annuler » coupe le blocage automatique du compte, ce qui le débloque.
-      for (const handle of blocked) {
-        showToast(handle, " vient d'être bloqué ! ✊", () => void write("setEnabled", handle, false));
-      }
-      for (const handle of unblocked) showToast(handle, " a été débloqué");
-    });
+    void announce(changes);
   }, ["results"]);
 }

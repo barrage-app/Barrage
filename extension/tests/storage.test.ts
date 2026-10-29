@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { DEFAULT_HANDLES } from "../src/features/accounts/defaults.ts";
 import { parseHandle } from "../src/features/accounts/handles.ts";
-import { active, getState, resultHandle, resultKey, unblockQueue } from "../src/core/state.ts";
+import { active, getState, resultChanges, resultHandle, resultKey, unblockQueue } from "../src/core/state.ts";
 import { addHandles, requestBlock, requestUnblock, setEnabled } from "../src/features/accounts/store.ts";
-import { finishUnblock, markAlreadyBlocked } from "../src/features/blocking/store.ts";
+import { finishUnblock, markAlreadyBlocked, recordAudit, useAccount } from "../src/features/blocking/store.ts";
 import { setNotify } from "../src/features/notifications/store.ts";
 import { addSeen } from "../src/features/timeline/store.ts";
 
@@ -241,4 +241,73 @@ test("un déblocage demandé à la main reste dû après la sortie du compte de 
   assert.deepEqual(unblockQueue(await getState()), ["a"]);
   await finishUnblock("a", { state: "unblocked", at: 2 });
   assert.deepEqual(unblockQueue(await getState()), []);
+});
+
+test("le premier compte X vu garde l'état existant, à vérifier auprès de X", async () => {
+  store.remote = ["a", "b"];
+  putResults({ a: { state: "blocked", at: 1 } });
+  store.seen = ["b"];
+  await useAccount("1", "moi");
+  const state = await getState();
+  assert.equal(state.account, "1");
+  assert.equal(state.prefix, "");
+  assert.equal(state.results.a?.state, "blocked");
+  assert.deepEqual(state.seen, ["b"]);
+  assert.deepEqual(state.audit, ["a", "b"]);
+  assert.deepEqual(state.accounts, { "1": { handle: "moi" } });
+});
+
+test("un second compte X a son propre état, sans les blocages du premier", async () => {
+  store.remote = ["a", "b"];
+  await useAccount("1", "un");
+  putResults({ a: { state: "blocked", at: 1 } });
+  await useAccount("2", "deux");
+  const second = await getState();
+  assert.equal(second.account, "2");
+  assert.deepEqual({ ...second.results }, {});
+  assert.deepEqual(second.audit, ["a", "b"]);
+
+  // Écrits pendant que le second compte est connecté, ils ne touchent pas le premier.
+  await requestBlock("b");
+  await markAlreadyBlocked(["a"]);
+  const first = await getState("1");
+  assert.deepEqual(first.seen, []);
+  assert.equal(first.results.a?.state, "blocked");
+  assert.deepEqual((await getState("2")).results.a?.state, "already_blocked");
+  assert.deepEqual(store["acct:2/seen"], ["b"]);
+});
+
+test("revenir sur un compte X déjà vu ne relance pas sa vérification", async () => {
+  await useAccount("1", null);
+  store.audit = [];
+  await useAccount("2", null);
+  await useAccount("1", "un");
+  const state = await getState();
+  assert.equal(state.account, "1");
+  assert.deepEqual(state.audit, []);
+  assert.deepEqual(state.accounts["1"], { handle: "un" });
+});
+
+test("la vérification auprès de X remplace l'état supposé par l'état réel", async () => {
+  store.remote = ["a", "b", "c", "d"];
+  await useAccount("1", null);
+  putResults({ a: { state: "blocked", at: 1 }, b: { state: "already_blocked", at: 1 }, d: { state: "blocked", at: 1 } });
+  await recordAudit(["a", "b", "c", "d"], ["a", "b", "c"], ["b", "c"], {}, "1");
+  const state = await getState();
+  // Bloqué d'après Barrage mais pas d'après X : à bloquer de nouveau.
+  assert.equal(state.results.a, undefined);
+  assert.equal(state.results.b?.state, "already_blocked");
+  assert.equal(state.results.c?.state, "already_blocked");
+  // Inconnu de X (suspendu) : l'état enregistré reste.
+  assert.equal(state.results.d?.state, "blocked");
+  assert.deepEqual(state.audit, []);
+});
+
+test("les changements de résultats se lisent pour un seul compte X", () => {
+  const changes = {
+    [resultKey("a")]: { newValue: { state: "blocked", at: 1 } },
+    [resultKey("b", "acct:2/")]: { newValue: { state: "blocked", at: 1 } },
+  };
+  assert.deepEqual(Object.keys(resultChanges(changes).after), ["a"]);
+  assert.deepEqual(Object.keys(resultChanges(changes, "acct:2/").after), ["b"]);
 });

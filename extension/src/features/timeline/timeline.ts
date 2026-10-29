@@ -8,9 +8,13 @@
 // La même lecture repère, sans aucune requête à X, les comptes que
 // l'utilisateur bloquait déjà : X affiche « Débloquer » à côté d'eux, dans la
 // page « Comptes bloqués » comme sur leur profil.
+//
+// Ce qu'affiche la page vaut pour le compte X connecté à son chargement : si
+// la session passe sur un autre compte entre-temps, plus rien n'est signalé.
 import { contextAlive } from "../../core/context.ts";
 import { active, getState, onStateChange, resultChanges, strings, type StateChanges } from "../../core/state.ts";
 import { write } from "../../core/write.ts";
+import { accountId } from "../blocking/api.ts";
 import { isPending, resultOf, type Results } from "../blocking/queue.ts";
 import { handleFromHref, handleFromUserNameText, profileHandleFromPath } from "./authors.ts";
 import {
@@ -26,6 +30,9 @@ import "./timeline.css";
 
 let listed = new Set<string>();
 let results: Results = Object.create(null);
+/** Compte X de la page, au chargement, et préfixe de ses clés de stockage. */
+const account = accountId();
+let prefix = "";
 
 /**
  * Comptes à envoyer en une écriture, et ceux déjà envoyés par cet onglet :
@@ -42,11 +49,11 @@ class Batch {
   }
 
   flush(): void {
-    if (!this.pending.size) return;
+    if (!this.pending.size || accountId() !== account) return;
     const batch = [...this.pending];
     this.pending = new Set();
     for (const handle of batch) this.sent.add(handle);
-    void write(this.name, batch).catch(() => {
+    void write(this.name, batch, account).catch(() => {
       for (const handle of batch) this.sent.delete(handle);
     });
   }
@@ -192,10 +199,11 @@ function scheduleScan(): void {
 
 /** Liste suivie changée : tout est relu. */
 async function loadList(): Promise<void> {
-  const state = await getState();
+  const state = await getState(account);
   // Un compte désactivé n'est plus masqué.
   listed = new Set(active(state));
   results = state.results;
+  prefix = state.prefix;
   dirtyRoots = null;
   scheduleScan();
 }
@@ -205,20 +213,22 @@ async function loadList(): Promise<void> {
  * comptes à signaler changent. Ni lecture du stockage, ni relecture de la page.
  */
 function onQueueChange(changes: StateChanges): void {
-  const { before, after } = resultChanges(changes);
+  const { before, after } = resultChanges(changes, prefix);
   for (const handle of Object.keys(before)) if (!(handle in after)) delete results[handle];
   Object.assign(results, after);
   // Un compte sorti de la file (traité, désactivé, écriture perdue) pourra être
   // signalé de nouveau s'il réapparaît en attente dans le fil.
-  if (changes.seen) {
-    const seen = new Set(strings(changes.seen.newValue));
+  const seenChange = changes[prefix + "seen"];
+  if (seenChange) {
+    const seen = new Set(strings(seenChange.newValue));
     for (const handle of seenBatch.sent) if (!seen.has(handle)) seenBatch.sent.delete(handle);
   }
 }
 
 export function watchTimeline(): void {
   void loadList();
-  onStateChange(() => void loadList(), ["handles", "remote", "disabled"]);
+  // Premier compte X vu : ses clés de stockage peuvent changer de préfixe.
+  onStateChange(() => void loadList(), ["handles", "remote", "disabled", "account"]);
   onStateChange(onQueueChange, ["results", "seen"]);
   // Le fil est virtualisé : les tweets entrent et sortent du DOM au défilement.
   const observer = new MutationObserver((records) => {
