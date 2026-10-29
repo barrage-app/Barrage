@@ -78,11 +78,27 @@
             <tbody>
               <tr><th scope="row">Ne jamais leur répondre, ne pas les citer, ne pas les retweeter, même pour critiquer</th><td>Une réponse ou une citation a un poids de 5, contre 0,66 pour un like. Rien dans le code de classement ne distingue l'accord du désaccord : une réponse critique les fait monter.</td></tr>
               <tr><th scope="row">Cliquer sur « pas intéressé »</th><td>Un signal volontaire et clair, pris en compte dans le score, et dans le second tri de la page quand il est activé.</td></tr>
-              <tr><th scope="row">Masquer ou bloquer</th><td>Le compte disparaît de votre fil, et votre geste apprend au modèle que les gens comme vous n'aiment pas ce contenu. Les blocages reçus sont aussi donnés à Grok quand il note les réponses du compte.</td></tr>
+              <tr><th scope="row">Bloquer plutôt que masquer</th><td>Dans les deux cas, le compte disparaît de votre fil et votre geste apprend au modèle que les gens comme vous n'aiment pas ce contenu. Mais le blocage fait plus : il cache aussi les reposts de ses posts, et il compte quand X note ses réponses (voir ci-dessous).</td></tr>
               <tr><th scope="row">Signaler seulement les vraies infractions</th><td>C'est le signal qui pèse le plus sur la réputation d'un compte. Certains classifieurs qui peuvent suspendre un compte semblent, d'après leur nom, s'appuyer sur les signalements. Une partie des calculs ne retient que les signalements jugés légitimes.</td></tr>
             </tbody>
           </table>
         </div>
+        <h3>Pourquoi bloquer est plus efficace que masquer</h3>
+        <p>C'est le point le plus important à comprendre, et le plus souvent mal compris. On lit partout que masquer serait plus fort que bloquer, parce que son poids est plus élevé (−58,8 contre −31,2). C'est une erreur de lecture : ces poids ne retirent pas de points au compte à chaque clic. X s'en sert pour <strong>deviner</strong> si vous allez masquer ou bloquer l'auteur d'un post avant de vous le montrer, et le relègue plus bas dans votre fil s'il pense que oui (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/xai-value-model/scoring.rs#L28-L56" target="_blank" rel="noopener">commentaire de X dans son code</a>). Une fois le compte masqué ou bloqué, ses posts disparaissent de votre fil : faire les deux n'ajoute presque rien.</p>
+        <p>En revanche, le blocage a deux effets que le masquage n'a pas :</p>
+        <ol class="facts">
+          <li>
+            <h3>Il cache aussi les reposts de ses posts</h3>
+            <p>Quand quelqu'un d'autre reposte ou cite un post d'un compte que vous bloquez, ce repost ou cette citation est aussi retiré de votre fil (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/home-mixer/filters/author_socialgraph_filter.rs#L10-L53" target="_blank" rel="noopener">filtre de X</a>). Pour un compte masqué, ce filtre ne retire que ses propres posts. D'autres règles de X peuvent cacher les citations de ses posts si vous ne le suivez pas (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/visibility-filtering/rules/author_rules.rs#L67-L72" target="_blank" rel="noopener">règle des citations</a>), mais nous n'avons trouvé aucune règle équivalente pour les reposts.</p>
+          </li>
+          <li>
+            <h3>Les blocages reçus comptent dans la notation de ses réponses</h3>
+            <p>Sous un post, il peut y avoir des centaines de réponses. X les fait noter par son IA, Grok, pour repérer le spam et décider lesquelles mettre en avant. Parmi les informations données à Grok sur l'auteur d'une réponse figure <strong>le nombre de blocages « légitimes » qu'il a reçus dans les dernières 24 heures</strong> (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/core/lm/thread.py#L58-L61" target="_blank" rel="noopener">grox/core/lm/thread.py</a>).</p>
+            <p>La note de Grok sert ensuite à classer la réponse. Une note de 0 colle en plus l'étiquette <code>RiskyHighVizReply</code> (« réponse à risque ») sur la réponse ; les comptes très influents et les comptes certifiés gris en sont exemptés (<a class="src" href="https://github.com/xai-org/x-algorithm/blob/5ed796374ea48ee26058aab66ab10c266bea2bef/grox/flows/reply_spam/task_write.py#L108-L148" target="_blank" rel="noopener">task_write.py</a>). Concrètement : un compte bloqué par beaucoup de monde dans la même journée risque de voir ses réponses moins bien classées, donc moins visibles sous les posts où il intervient. Le masquage n'apparaît nulle part dans ce mécanisme.</p>
+          </li>
+        </ol>
+        <p class="src-line">Ce qu'on ne sait pas, car ce n'est pas dans le code publié : ce qui rend un blocage « légitime » (des blocages automatiques en masse ne comptent peut-être pas), quel poids Grok donne à ce chiffre parmi ses autres informations, et comment la note est ensuite utilisée pour afficher les réponses. Le mécanisme est détaillé dans <a href="algorithme.html#tri-des-reponses">l'analyse complète</a>.</p>
+
         <p class="src-line">Rappel : ces gestes réduisent surtout la portée d'un compte <strong>chez les gens qui vous ressemblent</strong>, via les recommandations. Son propre public est à peine touché. Le détail et les liens vers le code sont dans <a href="algorithme.html#signaux">l'analyse complète</a>.</p>
       </div>
     </section>
@@ -158,7 +174,7 @@
 
         <div class="callout callout--yellow">
           <h3>En une phrase</h3>
-          <p>Des posts originaux qui donnent envie de répondre et de partager, des gens qui se suivent entre eux et citent avec un commentaire plutôt que de retweeter ou liker, et un silence total face aux comptes adverses : « pas intéressé », masquer ou bloquer, et ne jamais interagir avec eux.</p>
+          <p>Des posts originaux qui donnent envie de répondre et de partager, des gens qui se suivent entre eux et citent avec un commentaire plutôt que de retweeter ou liker, et un silence total face aux comptes adverses : « pas intéressé », bloquer plutôt que masquer, et ne jamais interagir avec eux.</p>
         </div>
       </div>
     </section>
