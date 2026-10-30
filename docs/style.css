@@ -9,7 +9,6 @@
   --muted-on-dark: #e6ded3;
   --cream: #fff6ee;
   --line: #f2e3d8;
-  --logo-red: #d7261e;
   --white: #ffffff;
   --radius: 14px;
   --shadow: 0 12px 32px rgba(120, 60, 30, 0.14);
@@ -121,7 +120,7 @@ p { margin: 0; }
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: var(--logo-red);
+  background: var(--coral);
 }
 .brand__logo::after {
   content: "";
